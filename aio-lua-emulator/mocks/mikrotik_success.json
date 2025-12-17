@@ -1,0 +1,36 @@
+{
+  "http://10.1.1.1/rest/system/resource": {
+    "status": 200,
+    "body": {
+      "cpu-load": 15,
+      "free-memory": 50000000,
+      "total-memory": 100000000,
+      "uptime": "5d 3h 20m",
+      "board-name": "MikroTik",
+      "version": "7.15"
+    }
+  },
+  "http://admin:admin123@10.1.1.1/rest/system/resource": {
+    "status": 200,
+    "body": {
+      "cpu-load": 15,
+      "free-memory": 50000000,
+      "total-memory": 100000000,
+      "uptime": "5d 3h 20m",
+      "board-name": "MikroTik",
+      "version": "7.15"
+    }
+  },
+  "/rest/system/resource": {
+    "status": 200,
+    "body": {
+      "cpu-load": 15,
+      "free-memory": 50000000,
+      "total-memory": 100000000,
+      "uptime": "5d 3h 20m",
+      "board-name": "MikroTik",
+      "version": "7.15"
+    }
+  }
+}
+

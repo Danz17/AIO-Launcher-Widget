@@ -1,0 +1,130 @@
+{
+    "name": "Gold",
+    "theme": "Gold:Gold",
+    "showIcons": "appcategories",
+    "iconPack": "",
+    "iconShape": "squircle",
+    "iconSize": "normal",
+    "fontSize": "normal",
+    "fontName": "",
+    "monochromeIcons": true,
+    "wallpaperAlpha": "20",
+    "widgets": [
+        {
+            "type": "builtin",
+            "name": "first",
+            "label": "First",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "weather",
+            "label": "Clock and weather",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "monitor",
+            "label": "Monitor",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "control",
+            "label": "Control panel",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "empty",
+            "label": "Widget #1",
+            "folded": false,
+            "payload": "",
+            "height": 1
+        },
+        {
+            "type": "builtin",
+            "name": "notify",
+            "label": "Notifications",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "stopwatch",
+            "label": "Stopwatch",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "timer",
+            "label": "Timer",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "recorder",
+            "label": "Audio recorder",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "appcategories",
+            "label": "App categories",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "empty_1",
+            "label": "Widget #2",
+            "folded": false,
+            "payload": "",
+            "height": 1
+        },
+        {
+            "type": "builtin",
+            "name": "dialer",
+            "label": "Dialer",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "empty_2",
+            "label": "Widget #3",
+            "folded": false,
+            "payload": "",
+            "height": 1
+        },
+        {
+            "type": "builtin",
+            "name": "player",
+            "label": "Player",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        }
+    ],
+    "external": true,
+    "author": "Sean",
+    "description": "Simple, readable, and utilitarian theme",
+    "version": "1.2"
+}

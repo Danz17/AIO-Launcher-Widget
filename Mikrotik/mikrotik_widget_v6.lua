@@ -1,0 +1,333 @@
+-- name = "MikroTik Monitor"
+-- description = "Router monitoring widget"
+-- author = "Alaa"
+-- foldable = "true"
+-- type = "widget"
+
+-- ============================================================================
+-- Configuration - EDIT THESE VALUES
+-- ============================================================================
+
+local CONFIG = {
+    ip = "10.1.1.1",
+    username = "admin",
+    password = "admin123",
+    dailyLimitGB = 10,
+    monthlyLimitGB = 100,
+    maxClientsShow = 6
+}
+
+-- State
+local state = {
+    mode = "full",
+    prevLteRx = 0,
+    prevLteTx = 0,
+    prevTime = 0,
+    hist_down = {},
+    hist_up = {},
+    hist_signal = {},
+    today_bytes = 0,
+    month_bytes = 0,
+    interfaces = nil,
+    lte_info = nil,
+    hotspot = nil
+}
+
+-- ============================================================================
+-- Utility Functions
+-- ============================================================================
+
+local function fmt(bps)
+    if not bps or bps < 0 then return "0" end
+    if bps >= 1e9 then return string.format("%.1fG", bps/1e9) end
+    if bps >= 1e6 then return string.format("%.1fM", bps/1e6) end
+    if bps >= 1e3 then return string.format("%.0fK", bps/1e3) end
+    return string.format("%.0f", bps)
+end
+
+local function fmt_bytes(bytes)
+    if not bytes or bytes < 0 then return "0B" end
+    if bytes >= 1e12 then return string.format("%.2fTB", bytes/1e12) end
+    if bytes >= 1e9 then return string.format("%.2fGB", bytes/1e9) end
+    if bytes >= 1e6 then return string.format("%.1fMB", bytes/1e6) end
+    if bytes >= 1e3 then return string.format("%.0fKB", bytes/1e3) end
+    return tostring(bytes) .. "B"
+end
+
+local function mini_graph(history, width)
+    width = width or 15
+    local bars = {"▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"}
+    if not history or #history == 0 then
+        return string.rep(bars[1], width)
+    end
+    local max_val = 1
+    for _, v in ipairs(history) do
+        if v and v > max_val then max_val = v end
+    end
+    local result = ""
+    local start_idx = math.max(1, #history - width + 1)
+    for i = start_idx, #history do
+        local v = history[i] or 0
+        local idx = math.min(8, math.floor((v / max_val) * 7) + 1)
+        result = result .. bars[idx]
+    end
+    local pad = width - (#history - start_idx + 1)
+    if pad > 0 then
+        result = string.rep(bars[1], pad) .. result
+    end
+    return result
+end
+
+local function progress_bar(percent, width)
+    width = width or 10
+    percent = percent or 0
+    local filled = math.floor((percent / 100) * width + 0.5)
+    filled = math.max(0, math.min(width, filled))
+    return string.rep("█", filled) .. string.rep("░", width - filled)
+end
+
+local function signal_bar(dbm)
+    local s = tonumber(dbm) or -100
+    if s >= -50 then return "████" end
+    if s >= -60 then return "███░" end
+    if s >= -70 then return "██░░" end
+    if s >= -80 then return "█░░░" end
+    return "░░░░"
+end
+
+-- ============================================================================
+-- Display Generation
+-- ============================================================================
+
+local function generate_display(res)
+    local now = os.time()
+    local dt = now - state.prevTime
+    if dt <= 0 or dt > 120 then dt = 30 end
+    state.prevTime = now
+    
+    local o = ""
+    
+    if not res then
+        return "⚠️ Cannot connect\nIP: " .. tostring(CONFIG.ip) .. "\n\nCheck credentials & network"
+    end
+    
+    -- Find LTE interface
+    local lte = nil
+    local interfaces = state.interfaces
+    if interfaces then
+        for _, iface in ipairs(interfaces) do
+            local name = iface.name or ""
+            if name:match("^lte") then 
+                lte = iface 
+                break
+            end
+        end
+    end
+    
+    -- System info
+    local cpu = tonumber(res["cpu-load"]) or 0
+    local mem_free = tonumber(res["free-memory"]) or 0
+    local mem_total = tonumber(res["total-memory"]) or 1
+    local mem = math.floor((1 - mem_free / mem_total) * 100)
+    local uptime = res.uptime or "0s"
+    local board = res["board-name"] or "MikroTik"
+    
+    -- LTE signal
+    local signal = -100
+    local lte_info = state.lte_info
+    if lte_info then
+        signal = tonumber(lte_info.rssi) or tonumber(lte_info.rsrp) or -100
+    end
+    
+    -- Calculate speeds
+    local total_down, total_up = 0, 0
+    if lte then
+        local rx = tonumber(lte["rx-byte"]) or 0
+        local tx = tonumber(lte["tx-byte"]) or 0
+        if state.prevLteRx > 0 then
+            total_down = math.max(0, (rx - state.prevLteRx) / dt)
+            total_up = math.max(0, (tx - state.prevLteTx) / dt)
+        end
+        state.prevLteRx = rx
+        state.prevLteTx = tx
+    end
+    
+    -- Update history
+    table.insert(state.hist_down, total_down * 8)
+    table.insert(state.hist_up, total_up * 8)
+    table.insert(state.hist_signal, signal)
+    while #state.hist_down > 30 do table.remove(state.hist_down, 1) end
+    while #state.hist_up > 30 do table.remove(state.hist_up, 1) end
+    while #state.hist_signal > 30 do table.remove(state.hist_signal, 1) end
+    
+    -- Client count
+    local client_count = 0
+    local hotspot = state.hotspot
+    if hotspot then client_count = #hotspot end
+    
+    -- Usage
+    if total_down > 0 or total_up > 0 then
+        local added = (total_down + total_up) * dt
+        state.today_bytes = state.today_bytes + added
+        state.month_bytes = state.month_bytes + added
+    end
+    
+    local active_wan = (lte and lte.running == "true") and "LTE" or "—"
+    
+    -- COMPACT MODE
+    if state.mode == "compact" then
+        o = "📡 " .. active_wan .. " ↓" .. fmt(total_down*8) .. " ↑" .. fmt(total_up*8)
+        if lte and lte.running == "true" then
+            o = o .. " " .. tostring(signal) .. "dBm"
+        end
+        o = o .. "\n👥 " .. tostring(client_count) .. " │ " .. fmt_bytes(state.today_bytes)
+        o = o .. "\n" .. mini_graph(state.hist_down, 25)
+        return o
+    end
+    
+    -- FULL MODE
+    o = "📟 " .. board .. "\n"
+    o = o .. "🖥 CPU " .. progress_bar(cpu, 5) .. " " .. tostring(cpu) .. "% │ RAM " .. tostring(mem) .. "%\n"
+    
+    local up_short = uptime:match("(%d+[wdhm])") or uptime
+    o = o .. "⏱ " .. up_short .. " │ 🌐 " .. active_wan .. "\n"
+    o = o .. "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    
+    if lte then
+        local status = lte.running == "true" and "🟢" or "🔴"
+        o = o .. "📡 LTE " .. status .. " " .. signal_bar(signal) .. " " .. tostring(signal) .. "dBm\n"
+        if lte_info and lte_info.operator then
+            o = o .. "   " .. tostring(lte_info.operator) .. " " .. tostring(lte_info["access-technology"] or "") .. "\n"
+        end
+        o = o .. "   ↓" .. fmt(total_down*8) .. " ↑" .. fmt(total_up*8) .. "\n"
+    end
+    
+    o = o .. "\n📊 SPEED\n"
+    local max_down = 0
+    for _, v in ipairs(state.hist_down) do if v and v > max_down then max_down = v end end
+    o = o .. "↓ " .. mini_graph(state.hist_down, 15) .. " " .. fmt(max_down) .. "\n"
+    local max_up = 0
+    for _, v in ipairs(state.hist_up) do if v and v > max_up then max_up = v end end
+    o = o .. "↑ " .. mini_graph(state.hist_up, 15) .. " " .. fmt(max_up) .. "\n"
+    
+    local daily_pct = math.min(100, (state.today_bytes / (CONFIG.dailyLimitGB * 1e9)) * 100)
+    local month_pct = math.min(100, (state.month_bytes / (CONFIG.monthlyLimitGB * 1e9)) * 100)
+    o = o .. "\n📈 DATA\n"
+    o = o .. "Day " .. progress_bar(daily_pct, 8) .. " " .. fmt_bytes(state.today_bytes) .. "\n"
+    o = o .. "Mon " .. progress_bar(month_pct, 8) .. " " .. fmt_bytes(state.month_bytes) .. "\n"
+    
+    if client_count > 0 and hotspot then
+        o = o .. "\n👥 CLIENTS (" .. tostring(client_count) .. ")\n"
+        local shown = 0
+        for _, c in ipairs(hotspot) do
+            if shown >= CONFIG.maxClientsShow then break end
+            local name = tostring(c.user or "?"):sub(1, 12)
+            local bytes_in = tonumber(c["bytes-in"]) or 0
+            local bytes_out = tonumber(c["bytes-out"]) or 0
+            o = o .. "• " .. name .. " " .. fmt_bytes(bytes_in + bytes_out) .. "\n"
+            shown = shown + 1
+        end
+        if client_count > CONFIG.maxClientsShow then
+            o = o .. "  +" .. tostring(client_count - CONFIG.maxClientsShow) .. " more\n"
+        end
+    end
+    
+    return o
+end
+
+-- ============================================================================
+-- Event Handlers
+-- ============================================================================
+
+function on_resume()
+    local url = "http://" .. CONFIG.username .. ":" .. CONFIG.password .. "@" .. CONFIG.ip .. "/rest/system/resource"
+    
+    ui:show_text("⏳ Connecting to " .. CONFIG.ip .. "...")
+    
+    http:get(url, function(result)
+        if result and result ~= "" then
+            local ok, res = pcall(function() return json:decode(result) end)
+            if ok and res then
+                -- Got system resource, now fetch interfaces
+                local iface_url = "http://" .. CONFIG.username .. ":" .. CONFIG.password .. "@" .. CONFIG.ip .. "/rest/interface"
+                http:get(iface_url, function(iface_result)
+                    if iface_result then
+                        local ok2, ifaces = pcall(function() return json:decode(iface_result) end)
+                        if ok2 then state.interfaces = ifaces end
+                    end
+                    
+                    -- Fetch LTE info
+                    local lte_url = "http://" .. CONFIG.username .. ":" .. CONFIG.password .. "@" .. CONFIG.ip .. "/rest/interface/lte/info"
+                    http:get(lte_url, function(lte_result)
+                        if lte_result then
+                            local ok3, lte_data = pcall(function() return json:decode(lte_result) end)
+                            if ok3 and lte_data and lte_data[1] then 
+                                state.lte_info = lte_data[1] 
+                            end
+                        end
+                        
+                        -- Fetch hotspot
+                        local hs_url = "http://" .. CONFIG.username .. ":" .. CONFIG.password .. "@" .. CONFIG.ip .. "/rest/ip/hotspot/active"
+                        http:get(hs_url, function(hs_result)
+                            if hs_result then
+                                local ok4, hs_data = pcall(function() return json:decode(hs_result) end)
+                                if ok4 then state.hotspot = hs_data end
+                            end
+                            
+                            -- All done, show display
+                            local display = generate_display(res)
+                            ui:show_text(display)
+                        end)
+                    end)
+                end)
+            else
+                ui:show_text("⚠️ Invalid JSON response\n\nCheck router API")
+            end
+        else
+            ui:show_text("⚠️ No response from router\n\nIP: " .. CONFIG.ip)
+        end
+    end)
+end
+
+function on_click()
+    system:open_browser("http://" .. tostring(CONFIG.ip) .. "/webfig/")
+end
+
+function on_long_click()
+    ui:show_context_menu({
+        "📊 Toggle Compact/Full",
+        "🔄 Refresh",
+        "📡 Disable LTE",
+        "📡 Enable LTE",
+        "🗑️ Reset Stats"
+    })
+end
+
+function on_context_menu_click(idx)
+    local base = "http://" .. CONFIG.username .. ":" .. CONFIG.password .. "@" .. CONFIG.ip .. "/rest"
+    
+    if idx == 1 then
+        state.mode = state.mode == "compact" and "full" or "compact"
+        on_resume()
+    elseif idx == 2 then
+        on_resume()
+    elseif idx == 3 then
+        http:post(base .. "/interface/disable", '{"numbers":"lte1"}', function()
+            system:toast("LTE disabled")
+            on_resume()
+        end)
+    elseif idx == 4 then
+        http:post(base .. "/interface/enable", '{"numbers":"lte1"}', function()
+            system:toast("LTE enabled")
+            on_resume()
+        end)
+    elseif idx == 5 then
+        state.today_bytes = 0
+        state.month_bytes = 0
+        state.hist_down = {}
+        state.hist_up = {}
+        state.hist_signal = {}
+        system:toast("Stats reset")
+        on_resume()
+    end
+end

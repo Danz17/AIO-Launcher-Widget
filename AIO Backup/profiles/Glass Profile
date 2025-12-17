@@ -1,0 +1,82 @@
+{
+    "name": "Glass",
+    "theme": "Glass Profile:AIO Theme",
+    "showIcons": "drawer, search, appbox, appbox_1",
+    "iconPack": "",
+    "iconShape": "system",
+    "iconSize": "normal",
+    "fontSize": "normal",
+    "fontName": "",
+    "monochromeIcons": false,
+    "wallpaperAlpha": "40",
+    "widgets": [
+        {
+            "type": "builtin",
+            "name": "first",
+            "label": "First",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "weather",
+            "label": "Clock and weather",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "calendarw",
+            "label": "Calendar",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "appbox",
+            "label": "Social",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "player",
+            "label": "Player",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "appbox_1",
+            "label": "Daily Used",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "notify",
+            "label": "Notifications",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "dialer",
+            "label": "Dialer",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        }
+    ],
+    "external": true,
+    "author": "Dhwanil Patel",
+    "description": "Glass Theme",
+    "version": "1.0"
+}

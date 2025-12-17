@@ -1,0 +1,170 @@
+{
+    "name": "Alaa",
+    "theme": "flat",
+    "showIcons": "",
+    "iconPack": "",
+    "iconShape": "squircle",
+    "iconSize": "normal",
+    "fontSize": "normal",
+    "fontName": "",
+    "monochromeIcons": false,
+    "wallpaperAlpha": "20",
+    "widgets": [
+        {
+            "type": "builtin",
+            "name": "first",
+            "label": "First",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "weather",
+            "label": "Clock and weather",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "calendarw",
+            "label": "Calendar",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "player",
+            "label": "Player",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "monitor",
+            "label": "Monitor",
+            "folded": false,
+            "payload": "rO0ABXNyAANhbzB2z6v8xCJ3owIAB1oAAWJaAAFjWgABaVoAAWpaAAFuWgABcEwAAXF0ABJMamF2YS9sYW5nL1N0cmluZzt4cAABAAEAAHQAB2JhdHRlcnk=",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "timer",
+            "label": "Timer",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "apps",
+            "label": "Frequent apps",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "notify",
+            "label": "Notifications",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "dialer",
+            "label": "Dialer",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "mail",
+            "label": "Mailbox",
+            "folded": false,
+            "payload": "rO0ABXNyAAN2aDC97KS1XO7YMgIABUwAAWJ0ABJMamF2YS9sYW5nL1N0cmluZztMAAFjcQB+AAFMAAFpcQB+AAFMAAFqcQB+AAFMAAFucQB+AAF4cHQAAHEAfgADcQB+AANxAH4AA3EAfgAD",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "tasks",
+            "label": "Tasks",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "feed",
+            "label": "News feed",
+            "folded": false,
+            "payload": "rO0ABXQAPmh0dHBzOi8vd3d3LmV1cm9uZXdzLmNvbS9yc3M/Zm9ybWF0PW1yc3MmbGV2ZWw9dGhlbWUmbmFtZT1uZXdz",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "calendar",
+            "label": "Calendar",
+            "folded": false,
+            "payload": "rO0ABXQAAA==",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "exchange",
+            "label": "Exchange Rates",
+            "folded": true,
+            "payload": "rO0ABXQACFBIUC9VU0Q6",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "financechart",
+            "label": "Financial Chart",
+            "folded": false,
+            "payload": "rO0ABXNyACJqYXZhLnV0aWwuQ29sbGVjdGlvbnMkU2luZ2xldG9uU2V0LFJBmCnAsb8CAAFMAAdlbGVtZW50dAASTGphdmEvbGFuZy9PYmplY3Q7eHBzcgAkcnUuZXhlY2JpdC5haW9sYXVuY2hlci5tb2RlbHMuVGlja2VyAAAAAAAAAAECAAZMAAhjdXJyZW5jeXQAEkxqYXZhL2xhbmcvU3RyaW5nO0wABG5hbWVxAH4ABEwABXByaWNlcQB+AARMAAlwcmljZURpZmZxAH4ABEwAB3NwYW5uZWR0ABZMYW5kcm9pZC90ZXh0L1NwYW5uZWQ7TAAGc3ltYm9scQB+AAR4cHQAA1VTRHQAC0JpdGNvaW4gVVNEdAAAcQB+AAlwdAAGQlRDVVNE",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "financechart_2",
+            "label": "Financial Chart",
+            "folded": false,
+            "payload": "rO0ABXNyACJqYXZhLnV0aWwuQ29sbGVjdGlvbnMkU2luZ2xldG9uU2V0LFJBmCnAsb8CAAFMAAdlbGVtZW50dAASTGphdmEvbGFuZy9PYmplY3Q7eHBzcgAkcnUuZXhlY2JpdC5haW9sYXVuY2hlci5tb2RlbHMuVGlja2VyAAAAAAAAAAECAAZMAAhjdXJyZW5jeXQAEkxqYXZhL2xhbmcvU3RyaW5nO0wABG5hbWVxAH4ABEwABXByaWNlcQB+AARMAAlwcmljZURpZmZxAH4ABEwAB3NwYW5uZWR0ABZMYW5kcm9pZC90ZXh0L1NwYW5uZWQ7TAAGc3ltYm9scQB+AAR4cHQAA1VTRHQAD0h5cGVybGlxdWlkIFVTRHQAAHEAfgAJcHQAB0hZUEVVU0Q=",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "financechart_1",
+            "label": "Financial Chart",
+            "folded": false,
+            "payload": "rO0ABXNyACJqYXZhLnV0aWwuQ29sbGVjdGlvbnMkU2luZ2xldG9uU2V0LFJBmCnAsb8CAAFMAAdlbGVtZW50dAASTGphdmEvbGFuZy9PYmplY3Q7eHBzcgAkcnUuZXhlY2JpdC5haW9sYXVuY2hlci5tb2RlbHMuVGlja2VyAAAAAAAAAAECAAZMAAhjdXJyZW5jeXQAEkxqYXZhL2xhbmcvU3RyaW5nO0wABG5hbWVxAH4ABEwABXByaWNlcQB+AARMAAlwcmljZURpZmZxAH4ABEwAB3NwYW5uZWR0ABZMYW5kcm9pZC90ZXh0L1NwYW5uZWQ7TAAGc3ltYm9scQB+AAR4cHQAA1VTRHQADEZhcnRjb2luIFVTRHQAAHEAfgAJcHQAC0ZBUlRDT0lOVVNE",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "recorder",
+            "label": "Audio recorder",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "control",
+            "label": "Control panel",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        }
+    ],
+    "external": false,
+    "author": "",
+    "description": "",
+    "version": ""
+}

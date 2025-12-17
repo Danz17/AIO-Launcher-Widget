@@ -1,0 +1,209 @@
+{
+    "name": "AIO Developer Home",
+    "theme": "flat",
+    "showIcons": "",
+    "iconPack": "",
+    "iconShape": "teardrop",
+    "iconSize": "normal",
+    "fontSize": "normal",
+    "fontName": "",
+    "monochromeIcons": null,
+    "wallpaperAlpha": "15",
+    "widgets": [
+        {
+            "type": "builtin",
+            "name": "first",
+            "label": "First",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "weather",
+            "label": "Часы и погода",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "calendarw",
+            "label": "Календарь",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "monitor",
+            "label": "Монитор",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "plugin",
+            "name": "ru.execbit.aiohealthplugin/ru.execbit.aiohealthplugin.PluginReceiver",
+            "label": "Здоровье",
+            "folded": false,
+            "payload": "",
+            "provider": "AIO Health Plugin"
+        },
+        {
+            "type": "builtin",
+            "name": "todo",
+            "label": "TODO",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "dialogs",
+            "label": "Диалоги",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "notify",
+            "label": "Уведомления",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "apps",
+            "label": "Частые приложения",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "appbox",
+            "label": "Мои приложения",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "player",
+            "label": "Плеер",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "tasks",
+            "label": "Задачи",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "mail",
+            "label": "Почта",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "feed",
+            "label": "Новости",
+            "folded": false,
+            "payload": "",
+            "height": 5
+        },
+        {
+            "type": "builtin",
+            "name": "telegram",
+            "label": "Telegram",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "notes",
+            "label": "Заметки",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "finance",
+            "label": "Финансы",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "calendar",
+            "label": "Календарь (неделя)",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "script",
+            "name": "AIO Developer Home:AIO Developer Home:zobnin.github.io:tide-widget.lua",
+            "label": "Tide Time (29.06.2025)",
+            "folded": false,
+            "payload": ""
+        },
+        {
+            "type": "builtin",
+            "name": "timer",
+            "label": "Таймер",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "recorder",
+            "label": "Диктофон",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "expenses",
+            "label": "Расходы (месяц)",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "control",
+            "label": "Панель управления",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "worldclock",
+            "label": "Мировое время",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        }
+    ],
+    "external": true,
+    "author": "Evgeny Zobnin",
+    "description": "Home screen used daily by the developer of AIO Launcher",
+    "version": "1.0"
+}

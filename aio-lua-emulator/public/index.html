@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIO Launcher Widget Emulator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>📱 AIO Launcher Widget Emulator</h1>
+            <div class="header-controls">
+                <select id="widgetSelect" class="widget-select">
+                    <option value="">Load Widget...</option>
+                </select>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="httpModeToggle">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">HTTP: <span id="httpModeLabel">Mock</span></span>
+                </label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="autoResumeToggle" checked>
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Auto Resume</span>
+                </label>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel: Code Editor -->
+            <div class="left-panel">
+                <div class="panel-header">
+                    <h2>Lua Script Editor</h2>
+                    <div class="editor-controls">
+                        <button class="btn btn-small" id="clearBtn">Clear</button>
+                        <button class="btn btn-small btn-primary" id="saveBtn">Save</button>
+                    </div>
+                </div>
+                <div id="editor" class="editor-container"></div>
+                
+                <div class="panel-footer">
+                    <div class="mock-controls">
+                        <h3>Mock Data</h3>
+                        <select id="mockSelect" class="mock-select">
+                            <option value="">No Mocks</option>
+                        </select>
+                        <button class="btn btn-small" id="editMockBtn">Edit</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Phone Preview -->
+            <div class="right-panel">
+                <div class="phone-frame">
+                    <!-- Status Bar -->
+                    <div class="status-bar">
+                        <span class="status-time" id="statusTime">12:34</span>
+                        <div class="status-icons">
+                            <span>📶</span>
+                            <span>📡</span>
+                            <span>🔋 75%</span>
+                        </div>
+                    </div>
+
+                    <!-- Widget Display Area -->
+                    <div class="widget-display-wrapper">
+                        <div class="widget-display">
+                            <div id="widgetOutput" class="widget-output">
+                                <div class="widget-placeholder">
+                                    <span class="placeholder-icon">📱</span>
+                                    <p>Paste your Lua script and click Resume</p>
+                                    <p class="placeholder-hint">or load a widget from the dropdown above</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Widget Controls -->
+                    <div class="widget-controls">
+                        <button class="btn btn-control" id="onResumeBtn">
+                            <span>▶️</span>
+                            <span>Resume</span>
+                        </button>
+                        <button class="btn btn-control" id="onClickBtn">
+                            <span>👆</span>
+                            <span>Click</span>
+                        </button>
+                        <button class="btn btn-control" id="onLongClickBtn">
+                            <span>👇</span>
+                            <span>Long Click</span>
+                        </button>
+                    </div>
+
+                    <!-- Navigation Bar -->
+                    <div class="nav-bar">
+                        <div class="nav-button">◁</div>
+                        <div class="nav-button">○</div>
+                        <div class="nav-button">□</div>
+                    </div>
+                </div>
+
+                <!-- HTTP Log -->
+                <div class="http-log-panel">
+                    <div class="panel-header">
+                        <h3>HTTP Requests Log</h3>
+                        <div class="header-controls">
+                            <button class="btn btn-small" id="foldAllBtn" title="Collapse all log entries">📋 Fold</button>
+                            <button class="btn btn-small" id="clearLogBtn">Clear</button>
+                        </div>
+                    </div>
+                    <div id="httpLog" class="http-log"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

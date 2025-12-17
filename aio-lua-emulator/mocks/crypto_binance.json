@@ -1,0 +1,36 @@
+{
+  "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT": {
+    "status": 200,
+    "body": {
+      "symbol": "BTCUSDT",
+      "lastPrice": "42500.50",
+      "priceChangePercent": "2.45",
+      "highPrice": "43000.00",
+      "lowPrice": "41500.00",
+      "volume": "25432.50"
+    }
+  },
+  "https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT": {
+    "status": 200,
+    "body": {
+      "symbol": "ETHUSDT",
+      "lastPrice": "2250.75",
+      "priceChangePercent": "-1.20",
+      "highPrice": "2300.00",
+      "lowPrice": "2200.00",
+      "volume": "150000.25"
+    }
+  },
+  "https://api.binance.com/api/v3/ticker/24hr?symbol=BNBUSDT": {
+    "status": 200,
+    "body": {
+      "symbol": "BNBUSDT",
+      "lastPrice": "305.25",
+      "priceChangePercent": "0.85",
+      "highPrice": "310.00",
+      "lowPrice": "300.00",
+      "volume": "85000.50"
+    }
+  }
+}
+

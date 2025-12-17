@@ -1,0 +1,121 @@
+{
+    "name": "Minimalist",
+    "theme": "Minimalist:Minimalist",
+    "showIcons": "",
+    "iconPack": "",
+    "iconShape": "teardrop",
+    "iconSize": "normal",
+    "fontSize": "normal",
+    "fontName": "",
+    "monochromeIcons": true,
+    "wallpaperAlpha": "15",
+    "widgets": [
+        {
+            "type": "builtin",
+            "name": "first",
+            "label": "First",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "script",
+            "name": "Minimalist:time-date-widget.lua",
+            "label": "Time & Date",
+            "folded": false,
+            "payload": ""
+        },
+        {
+            "type": "builtin",
+            "name": "weatherw",
+            "label": "Weather forecast",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "calendarw",
+            "label": "Calendar",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "todo",
+            "label": "TODO",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "dialogs",
+            "label": "Conversations",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "notify",
+            "label": "Notifications",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "apps",
+            "label": "Frequent apps",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "stopwatch",
+            "label": "Stopwatch",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "timer",
+            "label": "Timer",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "recorder",
+            "label": "Audio recorder",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "financechart",
+            "label": "Financial Chart",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "player",
+            "label": "Player",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        }
+    ],
+    "external": true,
+    "author": "Mike Thorn",
+    "description": "Simple and clean",
+    "version": "1.1"
+}

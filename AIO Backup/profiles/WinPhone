@@ -1,0 +1,162 @@
+{
+    "name": "WinPhone",
+    "theme": "WinPhone:Windows Phone",
+    "showIcons": "drawer, apps",
+    "iconPack": "",
+    "iconShape": "square",
+    "iconSize": "normal",
+    "fontSize": "normal",
+    "fontName": "",
+    "monochromeIcons": true,
+    "wallpaperAlpha": "15",
+    "widgets": [
+        {
+            "type": "builtin",
+            "name": "first",
+            "label": "First",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "weather",
+            "label": "Clock and weather",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "calendarw",
+            "label": "Calendar",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "monitor",
+            "label": "Monitor",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "todo",
+            "label": "TODO",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "dialogs",
+            "label": "Conversations",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "notify",
+            "label": "Notifications",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "apps",
+            "label": "Frequent apps",
+            "folded": false,
+            "payload": "",
+            "height": 2
+        },
+        {
+            "type": "builtin",
+            "name": "timer",
+            "label": "Timer",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "player",
+            "label": "Player",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "tasks",
+            "label": "Tasks",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "mail",
+            "label": "Почта",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "feed",
+            "label": "News feed",
+            "folded": false,
+            "payload": "",
+            "height": 5
+        },
+        {
+            "type": "builtin",
+            "name": "finance",
+            "label": "Finance",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "calendar",
+            "label": "Calendar (week)",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "recorder",
+            "label": "Audio recorder",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "control",
+            "label": "Control panel",
+            "folded": true,
+            "payload": "",
+            "height": -1
+        },
+        {
+            "type": "builtin",
+            "name": "worldclock",
+            "label": "World clock",
+            "folded": false,
+            "payload": "",
+            "height": -1
+        }
+    ],
+    "external": true,
+    "author": "Evgeny Zobnin",
+    "description": "Windows Phone inspired theme",
+    "version": "1.2"
+}

@@ -1,0 +1,31 @@
+{
+  "name": "aio-lua-emulator",
+  "version": "1.0.0",
+  "description": "Lua emulator for testing AIO Launcher scripts locally",
+  "main": "emulator.js",
+  "type": "module",
+  "scripts": {
+    "test": "node emulator.js",
+    "start": "node emulator.js",
+    "server": "node server.js",
+    "visual": "node server.js"
+  },
+  "keywords": [
+    "aio-launcher",
+    "lua",
+    "emulator",
+    "testing"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.22.1",
+    "fengari": "^0.1.4",
+    "inquirer": "^9.2.12",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^3.3.2"
+  }
+}

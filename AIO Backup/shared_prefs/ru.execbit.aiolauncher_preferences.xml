@@ -1,0 +1,367 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="exchange_enabled" value="true" />
+    <int name="theme_enabled_icon_color" value="-2039584" />
+    <string name="calendar_num">3</string>
+    <long name="expenses_cloud_sync_time" value="1763677421137" />
+    <boolean name="use_monochrome_icons" value="false" />
+    <boolean name="widgets_auto_folding" value="true" />
+    <boolean name="recorder_compactMode" value="false" />
+    <boolean name="traffic_enabled" value="true" />
+    <int name="theme_drawer_buttons_color" value="-12434878" />
+    <int name="tasks_date_hint_shown_int" value="2" />
+    <int name="appfolders_position" value="6" />
+    <string name="expenses_num">-1</string>
+    <boolean name="monitor_auto_folding" value="true" />
+    <long name="todo_cloud_sync_time" value="1763677559307" />
+    <boolean name="empty_is_new" value="false" />
+    <int name="dialer_position" value="7" />
+    <boolean name="appbox_enabled" value="true" />
+    <string name="cloud_dropbox_token"></string>
+    <int name="stopwatch_position" value="0" />
+    <boolean name="map_location_tracking" value="false" />
+    <boolean name="dialer_enabled" value="true" />
+    <boolean name="control_is_new" value="false" />
+    <boolean name="calendar_enabled" value="false" />
+    <int name="theme_drawer_bg_color" value="-436207616" />
+    <int name="finance_position" value="0" />
+    <boolean name="appbox_use_icons" value="true" />
+    <boolean name="save_position" value="true" />
+    <boolean name="player_is_new" value="false" />
+    <boolean name="stopwatch_enabled" value="false" />
+    <int name="apps_position" value="6" />
+    <boolean name="appsbytags_is_new" value="false" />
+    <boolean name="search_gpt" value="true" />
+    <boolean name="notify_compactMode" value="true" />
+    <string name="weather_last_longitude">121.0538045</string>
+    <string name="control_toggles">wifi:bt:gps:flash:voldown:volup:ringer:donotdisturb:brdown:brup:brauto:hotspot:nfc:vpn:sync:autorotate:screenofftime:airplane:mobiledata:sleep</string>
+    <boolean name="first_enabled" value="true" />
+    <string name="notes_num">-1</string>
+    <boolean name="weather_is_new" value="false" />
+    <boolean name="weather_last_network_update_success" value="true" />
+    <boolean name="dialogs_compactMode" value="false" />
+    <long name="last_billing_ok_at" value="1765833505291" />
+    <boolean name="dialogs_is_new" value="false" />
+    <boolean name="dialer_auto_folding" value="true" />
+    <int name="recorder_position" value="10" />
+    <int name="theme_accent_color" value="-5388289" />
+    <boolean name="mail_enabled" value="false" />
+    <boolean name="first_is_new" value="false" />
+    <boolean name="weatherw_enabled" value="false" />
+    <string name="exchange_num">3</string>
+    <string name="appcategories_sorting_method">by_launch_count</string>
+    <boolean name="weather_compactMode" value="false" />
+    <int name="themes_hint_position" value="0" />
+    <boolean name="calculator_compactMode" value="true" />
+    <string name="weather_speed_unit">ms</string>
+    <boolean name="recorder_enabled" value="true" />
+    <int name="default_launcher_card_closed_times" value="0" />
+    <boolean name="sale_is_new" value="false" />
+    <int name="theme_overlay_color" value="-16777216" />
+    <int name="theme_drawer_text_color" value="-5000269" />
+    <boolean name="traffic_compactMode" value="false" />
+    <long name="todo_last_modified" value="1763676319000" />
+    <int name="generator_count" value="0" />
+    <boolean name="gpt_translator" value="true" />
+    <boolean name="monitor_show_screen_time" value="false" />
+    <int name="mail_position" value="8" />
+    <string name="control_num">3</string>
+    <boolean name="aiostore_is_new" value="false" />
+    <int name="theme_compact_mode_sign_color" value="-6381922" />
+    <boolean name="weather_first_run" value="false" />
+    <boolean name="appfolders_enabled" value="true" />
+    <boolean name="theme_title_line" value="true" />
+    <long name="exchange_data_last_update_time" value="1765833340730" />
+    <int name="theme_badge_color" value="-16747537" />
+    <string name="calculator_num">3</string>
+    <boolean name="is_net_is_available_last_time" value="true" />
+    <long name="last_profiles_change_time" value="1765731276205" />
+    <boolean name="drawer_abc_at_bottom" value="false" />
+    <string name="weatherw_num">-1</string>
+    <boolean name="dialer_is_new" value="false" />
+    <boolean name="stopwatch_is_new" value="false" />
+    <boolean name="recorder_is_new" value="false" />
+    <boolean name="calendarw_is_new" value="false" />
+    <string name="financechart_tickers_2">HYPEUSD|Hyperliquid USD|USD‖</string>
+    <boolean name="worldclock_compactMode" value="false" />
+    <boolean name="apps_show_categories" value="true" />
+    <boolean name="was_anr" value="false" />
+    <string name="financechart_tickers_1">FARTCOINUSD|Fartcoin USD|USD‖</string>
+    <string name="app_uuid">f5ec9f4c-5e41-4bda-89ba-3ad4b3dfcfcc</string>
+    <string name="first_num">3</string>
+    <boolean name="show_wizard" value="false" />
+    <boolean name="apps_is_new" value="false" />
+    <int name="feed_position" value="9" />
+    <string name="language">system</string>
+    <int name="weatherw_position" value="0" />
+    <boolean name="worldclock_is_new" value="false" />
+    <string name="tasks_num">3</string>
+    <boolean name="player_auto_enabled" value="true" />
+    <boolean name="change_theme" value="false" />
+    <boolean name="monitor_show_traffic" value="false" />
+    <boolean name="widgetbuilder_enabled" value="false" />
+    <boolean name="is_gpt_auto_enabled" value="true" />
+    <string name="profiles_current">Default</string>
+    <long name="scripts_actual_update_time" value="1763676090225" />
+    <string name="apps_num">3</string>
+    <string name="theme_progress_style">classic</string>
+    <int name="theme_drawer_buttons_text_color" value="-1" />
+    <string name="icon_shape">rounded</string>
+    <boolean name="notify_always_expand_content_view" value="true" />
+    <boolean name="map_enabled" value="false" />
+    <boolean name="applist_enabled" value="false" />
+    <int name="theme_disabled_icon_color" value="-10854807" />
+    <boolean name="control_enabled" value="true" />
+    <int name="theme_progress_radius" value="8" />
+    <boolean name="widgets_smooth_resize" value="true" />
+    <boolean name="monitor_show_battery_temp" value="true" />
+    <int name="theme_card_stroke_color" value="0" />
+    <boolean name="calendar_is_new" value="false" />
+    <boolean name="feed_compactMode" value="false" />
+    <boolean name="hide_cards_title" value="false" />
+    <boolean name="financechart_is_new" value="false" />
+    <long name="feed_last_update_time" value="1765763206499" />
+    <boolean name="apps_compactMode" value="false" />
+    <int name="theme_progress_good_color" value="-11890945" />
+    <boolean name="timer_is_new" value="false" />
+    <long name="financechart_last_update_time" value="1765833341314" />
+    <string name="exchange_currencies"></string>
+    <boolean name="apps_use_icons" value="false" />
+    <boolean name="disable_statusbar" value="true" />
+    <boolean name="independent_settings" value="true" />
+    <boolean name="remote_api" value="true" />
+    <int name="sale_position" value="18" />
+    <boolean name="cloud_notification_perm_asked" value="true" />
+    <int name="control_position" value="12" />
+    <string name="financechart_tickers_0">BTCUSD|Bitcoin USD|USD‖</string>
+    <string name="timer_num">3</string>
+    <boolean name="remote_broadcasts" value="true" />
+    <boolean name="drawer_hide_bottom_view" value="false" />
+    <boolean name="stopwatch_compactMode" value="false" />
+    <string name="todo_num">3</string>
+    <string name="drawer_sorting">abc</string>
+    <boolean name="appupdate_is_new" value="false" />
+    <string name="traffic_num">3</string>
+    <boolean name="notify_show_toast" value="false" />
+    <boolean name="financechart_compactMode" value="false" />
+    <int name="weather_position" value="1" />
+    <boolean name="telegram_compactMode" value="false" />
+    <long name="last_themes_change_time" value="1765731276205" />
+    <boolean name="telegram_enabled" value="false" />
+    <boolean name="todo_is_new" value="false" />
+    <boolean name="mail_compactMode" value="false" />
+    <boolean name="widgetbuilder_compactMode" value="false" />
+    <int name="traffic_position" value="3" />
+    <boolean name="tasks_is_new" value="false" />
+    <boolean name="tasks_compactMode" value="false" />
+    <long name="script_last_update_time" value="1763677575012" />
+    <string name="tasks_pinned"></string>
+    <boolean name="drawer_show_icons" value="false" />
+    <boolean name="feed_is_new" value="false" />
+    <boolean name="search_show_keyboard" value="true" />
+    <boolean name="clock_is_new" value="false" />
+    <boolean name="for_right_handed" value="true" />
+    <boolean name="telegram_is_new" value="false" />
+    <int name="financechart_position" value="9" />
+    <long name="last_profiles_sync_time" value="1763681236487" />
+    <boolean name="notify_enabled" value="true" />
+    <boolean name="timer_enabled" value="false" />
+    <int name="telegram_position" value="0" />
+    <boolean name="default_launcher_is_new" value="false" />
+    <int name="first_position" value="0" />
+    <boolean name="gpt_suggestions" value="true" />
+    <boolean name="todo_enabled" value="false" />
+    <int name="theme_button_radius" value="30" />
+    <int name="theme_secondary_text_color" value="-6381922" />
+    <boolean name="calendar_compactMode" value="false" />
+    <string name="recorder_num">3</string>
+    <boolean name="monitor_show_bt_battery" value="false" />
+    <int name="monitor_position" value="3" />
+    <int name="theme_inner_padding" value="0" />
+    <boolean name="feed_enabled" value="false" />
+    <string name="wallpaper_alpha">20</string>
+    <int name="theme_widget_background_color" value="0" />
+    <boolean name="expenses_compactMode" value="false" />
+    <boolean name="clock_24h" value="false" />
+    <boolean name="monitor_show_ram" value="false" />
+    <boolean name="ai_warning_is_new" value="false" />
+    <boolean name="appbox_is_new" value="false" />
+    <boolean name="appcategories_is_new" value="false" />
+    <boolean name="financechart_enabled" value="true" />
+    <string name="icon_pack"></string>
+    <boolean name="finance_is_new" value="false" />
+    <boolean name="tips_is_new" value="false" />
+    <string name="notify_num">3</string>
+    <int name="calendar_position" value="9" />
+    <string name="drawer_style">widgets</string>
+    <int name="theme_dialog_bg_color" value="-15197147" />
+    <string name="dialogs_num">-1</string>
+    <string name="map_current_position">14.485593441988385:121.0574870196044</string>
+    <boolean name="smartspacer_is_new" value="false" />
+    <int name="theme_progress_bad_color" value="-769226" />
+    <int name="theme_fab_text_color" value="-1118482" />
+    <string name="monitor_num">3</string>
+    <string name="smartspacer_num">3</string>
+    <string name="calendarw_num">3</string>
+    <boolean name="monitor_enabled" value="false" />
+    <boolean name="weatherw_is_new" value="false" />
+    <boolean name="notify_hide_low_importance" value="true" />
+    <boolean name="monitor_show_brightness" value="false" />
+    <boolean name="subscribed" value="true" />
+    <int name="shortcuts_hint_shown_times" value="3" />
+    <boolean name="theme_drawer_color_line" value="true" />
+    <string name="permissions">android.permission.INTERNET:android.permission.WAKE_LOCK:android.permission.POST_NOTIFICATIONS:android.permission.VIBRATE:android.permission.ACCESS_COARSE_LOCATION:android.permission.ACCESS_FINE_LOCATION:android.permission.READ_CONTACTS:android.permission.ACCESS_NETWORK_STATE:android.permission.ACCESS_WIFI_STATE:android.permission.READ_PHONE_STATE:android.permission.READ_BASIC_PHONE_STATE:android.permission.RECORD_AUDIO:android.permission.READ_CALENDAR:android.permission.WRITE_CALENDAR:android.permission.EXPAND_STATUS_BAR:android.permission.USE_CREDENTIALS:android.permission.FLASHLIGHT:android.permission.CHANGE_WIFI_STATE:android.permission.ACCESS_HIDDEN_PROFILES:android.permission.READ_SYNC_SETTINGS:android.permission.WRITE_SYNC_SETTINGS:android.permission.QUERY_ALL_PACKAGES:android.permission.ACCESS_NOTIFICATION_POLICY:android.permission.REQUEST_DELETE_PACKAGES:com.android.alarm.permission.SET_ALARM:com.android.vending.BILLING:android.permission.RECEIVE_BOOT_COMPLETED:android.permission.FOREGROUND_SERVICE:ru.execbit.aiolauncher.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION</string>
+    <string name="icon_size">normal</string>
+    <boolean name="weatheronly_is_new" value="false" />
+    <boolean name="smartspacer_enabled" value="false" />
+    <boolean name="monitor_compactMode" value="false" />
+    <int name="theme_drawer_scroll_color" value="-15197147" />
+    <string name="financechart_num">3</string>
+    <boolean name="profiles_default_dumped" value="true" />
+    <int name="timer_position" value="5" />
+    <int name="notify_position" value="4" />
+    <boolean name="notify_is_new" value="false" />
+    <boolean name="notify_auto_folding" value="false" />
+    <boolean name="monitor_is_new" value="false" />
+    <string name="weather_num">3</string>
+    <boolean name="show_notify_badges" value="true" />
+    <boolean name="player_enabled" value="false" />
+    <int name="theme_search_bar_text_color" value="-16777216" />
+    <int name="theme_card_stroke_width" value="0" />
+    <int name="notes_position" value="0" />
+    <int name="calendarw_position" value="2" />
+    <string name="finance_num">-1</string>
+    <long name="weather_last_network_success_update_time" value="1765833346036" />
+    <boolean name="theme_title_uppercase" value="false" />
+    <boolean name="themes_hint_is_new" value="false" />
+    <long name="last_settings_sync_time" value="1763681235336" />
+    <boolean name="appbox_compactMode" value="false" />
+    <string name="theme_compact_mode_sign">—</string>
+    <boolean name="notes_is_new" value="false" />
+    <boolean name="traffic_is_new" value="false" />
+    <int name="applist_position" value="4" />
+    <boolean name="show_drawer_wizard" value="false" />
+    <boolean name="sale_enabled" value="false" />
+    <boolean name="notify_auto_fold_fixed" value="true" />
+    <int name="widgetbuilder_position" value="4" />
+    <boolean name="themes_hint_enabled" value="false" />
+    <string name="appbox_num">-1</string>
+    <boolean name="legacy_to_adaptive" value="true" />
+    <boolean name="subscription_is_new" value="false" />
+    <int name="theme_badge_text_color" value="-1118482" />
+    <boolean name="contacts_is_new" value="false" />
+    <boolean name="premium" value="true" />
+    <string name="appbox_name">Productivity</string>
+    <string name="exchange_base_currency">PHP</string>
+    <string name="theme">flat</string>
+    <long name="recorder_cloud_sync_time" value="1763681234005" />
+    <string name="monitor_compact_indicator">battery</string>
+    <boolean name="monitor_show_battery" value="true" />
+    <boolean name="exchange_compactMode" value="false" />
+    <string name="dialer_num">3</string>
+    <int name="theme_drawer_scroll_slider_color" value="-13881286" />
+    <boolean name="weather_enabled" value="true" />
+    <boolean name="weather_celsius" value="true" />
+    <boolean name="gpt_location_access" value="true" />
+    <boolean name="gpt_app_tagger" value="true" />
+    <long name="financechart_last_update_time2" value="1765117688190" />
+    <long name="financechart_last_update_time1" value="1765117688200" />
+    <boolean name="control_compactMode" value="true" />
+    <int name="theme_title_color" value="-4342339" />
+    <boolean name="calendarw_enabled" value="true" />
+    <boolean name="dialogs_enabled" value="false" />
+    <boolean name="appfolders_is_new" value="false" />
+    <boolean name="notes_compactMode" value="true" />
+    <long name="notes_cloud_sync_time" value="1763676342838" />
+    <boolean name="expenses_regenerate_translation" value="false" />
+    <boolean name="calendar_skip_recurrent" value="true" />
+    <boolean name="notes_enabled" value="false" />
+    <int name="todo_position" value="0" />
+    <boolean name="smartspacer_compactMode" value="false" />
+    <long name="generator_last_time" value="1765728409224" />
+    <long name="last_alarm_time" value="1765833340315" />
+    <int name="theme_search_bg_color" value="-16777216" />
+    <boolean name="default_launcher_enabled" value="false" />
+    <int name="exchange_position" value="8" />
+    <long name="expenses_notify_from" value="1763677572670" />
+    <boolean name="first_run" value="false" />
+    <string name="mail_name">Mailbox</string>
+    <boolean name="widgetscontainer_is_new" value="false" />
+    <boolean name="welcome_is_new" value="false" />
+    <int name="theme_button_color" value="-9209982" />
+    <boolean name="expenses_enabled" value="false" />
+    <string name="mail_num">3</string>
+    <boolean name="finance_enabled" value="false" />
+    <boolean name="applist_is_new" value="false" />
+    <boolean name="map_is_new" value="false" />
+    <long name="scripts_last_update_time" value="1765754799323" />
+    <int name="theme_dialog_header_color" value="-13881286" />
+    <boolean name="first_compactMode" value="false" />
+    <boolean name="dialer_compactMode" value="true" />
+    <int name="generator_year_month" value="202512" />
+    <string name="stopwatch_num">3</string>
+    <int name="theme_title_line_color" value="-1720355467" />
+    <long name="tasks_cloud_sync_time" value="1763681232876" />
+    <boolean name="ai_card_was_closed" value="true" />
+    <boolean name="apps_enabled" value="false" />
+    <boolean name="after_backup" value="true" />
+    <boolean name="theme_button_transparent" value="false" />
+    <long name="exchange_last_update_time" value="1765833340733" />
+    <long name="last_categories_change_time" value="1764177091197" />
+    <boolean name="alarm_is_new" value="false" />
+    <boolean name="theme_app_button_colored" value="true" />
+    <string name="theme_card_rounding">sharp</string>
+    <int name="appbox_position" value="5" />
+    <string name="weather_last_latitude">14.4850237</string>
+    <boolean name="calculator_enabled" value="true" />
+    <boolean name="exchange_is_new" value="false" />
+    <boolean name="worldclock_enabled" value="false" />
+    <boolean name="gpt_notify_filter" value="true" />
+    <int name="theme_fab_icon_color" value="-2039584" />
+    <int name="tasks_position" value="8" />
+    <string name="font_size">normal</string>
+    <int name="appcategories_position" value="0" />
+    <int name="theme_primary_text_color" value="-1118482" />
+    <boolean name="finance_compactMode" value="false" />
+    <int name="map_position" value="5" />
+    <int name="calculator_position" value="11" />
+    <boolean name="ai_warning_enabled" value="false" />
+    <int name="worldclock_position" value="0" />
+    <int name="theme_search_bar_color" value="-1" />
+    <long name="finance_last_update_time" value="1765755801610" />
+    <boolean name="theme_black_statusbar" value="false" />
+    <boolean name="timer_compactMode" value="false" />
+    <string name="telegram_num">3</string>
+    <boolean name="todo_compactMode" value="true" />
+    <int name="player_position" value="0" />
+    <boolean name="expenses_is_new" value="false" />
+    <int name="theme_background_color" value="0" />
+    <int name="theme_progress_color" value="-10854807" />
+    <string name="player_num">-1</string>
+    <boolean name="monitor_show_nand" value="true" />
+    <int name="expenses_position" value="0" />
+    <boolean name="image_is_new" value="false" />
+    <boolean name="welcome_enabled" value="false" />
+    <long name="cloud_last_sync_attempt_time" value="1765754799323" />
+    <boolean name="changelog_is_new" value="false" />
+    <long name="weather_last_network_update_time" value="1765833346036" />
+    <int name="theme_fab_color" value="-13881286" />
+    <long name="last_scripts_change_time" value="1765777994964" />
+    <boolean name="player_compactMode" value="false" />
+    <int name="smartspacer_position" value="4" />
+    <boolean name="tasks_enabled" value="false" />
+    <boolean name="widgetbuilder_is_new" value="false" />
+    <long name="weather_last_update_time" value="1765833505224" />
+    <string name="search_history_lines">3</string>
+    <boolean name="mail_is_new" value="false" />
+    <string name="feed_num">3</string>
+    <int name="dialogs_position" value="0" />
+    <long name="last_settings_change_time" value="1761691311000" />
+    <boolean name="appcategories_enabled" value="false" />
+    <boolean name="calculator_is_new" value="false" />
+    <string name="cloud_sync_interval">3153600000000</string>
+    <string name="worldclock_num">-1</string>
+    <boolean name="appkilled_is_new" value="false" />
+    <int name="theme_button_text_color" value="-1118482" />
+    <boolean name="theme_title_bold" value="false" />
+</map>

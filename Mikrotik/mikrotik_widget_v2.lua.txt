@@ -1,0 +1,558 @@
+-- name = "MikroTik Monitor"
+-- description = "Router monitoring widget with LTE, WiFi, clients, and data usage"
+-- author = "Alaa"
+-- foldable = "true"
+-- type = "widget"
+
+-- ============================================================================
+-- Configuration
+-- ============================================================================
+
+local DEFAULT_CONFIG = {
+    ip = "10.1.1.1",
+    username = "admin",
+    password = "admin123",
+    dailyLimitGB = 10,
+    monthlyLimitGB = 100,
+    lowSignalThreshold = -85,
+    highCpuThreshold = 80,
+    highMemThreshold = 85,
+    pingHost = "8.8.8.8",
+    refreshInterval = 30,
+    maxClientsShow = 6
+}
+
+-- State storage (in-memory, persisted via settings)
+local state = {
+    mode = "full",
+    prevLteRx = 0,
+    prevLteTx = 0,
+    prevTime = 0,
+    hist_down = {},
+    hist_up = {},
+    hist_signal = {},
+    usage_daily = {},
+    usage_monthly = {}
+}
+
+-- ============================================================================
+-- Storage Functions (AIO Launcher compatible)
+-- ============================================================================
+
+local function load_state()
+    local mode = settings:get("mt_mode")
+    if mode then state.mode = mode end
+    
+    local prevLteRx = settings:get("mt_prevLteRx")
+    if prevLteRx then state.prevLteRx = tonumber(prevLteRx) or 0 end
+    
+    local prevLteTx = settings:get("mt_prevLteTx")
+    if prevLteTx then state.prevLteTx = tonumber(prevLteTx) or 0 end
+    
+    local prevTime = settings:get("mt_prevTime")
+    if prevTime then state.prevTime = tonumber(prevTime) or 0 end
+end
+
+local function save_state()
+    settings:set("mt_mode", state.mode)
+    settings:set("mt_prevLteRx", tostring(state.prevLteRx))
+    settings:set("mt_prevLteTx", tostring(state.prevLteTx))
+    settings:set("mt_prevTime", tostring(state.prevTime))
+end
+
+local function get_config()
+    local ip = settings:get("mt_ip")
+    local user = settings:get("mt_username")
+    local pass = settings:get("mt_password")
+    local daily = settings:get("mt_dailyLimit")
+    local monthly = settings:get("mt_monthlyLimit")
+    
+    if ip then DEFAULT_CONFIG.ip = ip end
+    if user then DEFAULT_CONFIG.username = user end
+    if pass then DEFAULT_CONFIG.password = pass end
+    if daily then DEFAULT_CONFIG.dailyLimitGB = tonumber(daily) or 10 end
+    if monthly then DEFAULT_CONFIG.monthlyLimitGB = tonumber(monthly) or 100 end
+    
+    return DEFAULT_CONFIG
+end
+
+-- ============================================================================
+-- Utility Functions
+-- ============================================================================
+
+local function base64_encode(data)
+    local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    return ((data:gsub('.', function(x) 
+        local r, b_str = '', x:byte()
+        for i = 8, 1, -1 do r = r .. (b_str % 2^i - b_str % 2^(i-1) > 0 and '1' or '0') end
+        return r
+    end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+        if #x < 6 then return '' end
+        local c = 0
+        for i = 1, 6 do c = c + (x:sub(i, i) == '1' and 2^(6-i) or 0) end
+        return b:sub(c+1, c+1)
+    end) .. ({'', '==', '='})[#data % 3 + 1])
+end
+
+local function get_auth(config)
+    return base64_encode(config.username .. ":" .. config.password)
+end
+
+local function fmt(bps)
+    if not bps or bps < 0 then return "0" end
+    if bps >= 1e9 then return string.format("%.1fG", bps/1e9) end
+    if bps >= 1e6 then return string.format("%.1fM", bps/1e6) end
+    if bps >= 1e3 then return string.format("%.0fK", bps/1e3) end
+    return string.format("%.0f", bps)
+end
+
+local function fmt_bytes(bytes)
+    if not bytes or bytes < 0 then return "0B" end
+    if bytes >= 1e12 then return string.format("%.2fTB", bytes/1e12) end
+    if bytes >= 1e9 then return string.format("%.2fGB", bytes/1e9) end
+    if bytes >= 1e6 then return string.format("%.1fMB", bytes/1e6) end
+    if bytes >= 1e3 then return string.format("%.0fKB", bytes/1e3) end
+    return bytes .. "B"
+end
+
+local function fmt_duration(seconds)
+    if not seconds or seconds == 0 then return "0s" end
+    local h = math.floor(seconds / 3600)
+    local m = math.floor((seconds % 3600) / 60)
+    if h > 24 then return math.floor(h/24) .. "d" .. (h%24) .. "h" end
+    if h > 0 then return h .. "h" .. m .. "m" end
+    return m .. "m"
+end
+
+local function parse_uptime(str)
+    if not str then return 0 end
+    local secs = 0
+    local w = str:match("(%d+)w") if w then secs = secs + tonumber(w) * 604800 end
+    local d = str:match("(%d+)d") if d then secs = secs + tonumber(d) * 86400 end
+    local h = str:match("(%d+)h") if h then secs = secs + tonumber(h) * 3600 end
+    local m = str:match("(%d+)m") if m then secs = secs + tonumber(m) * 60 end
+    local s = str:match("(%d+)s") if s then secs = secs + tonumber(s) end
+    return secs
+end
+
+local function mini_graph(history, width)
+    width = width or 15
+    local bars = {"▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"}
+    if not history or #history == 0 then
+        return string.rep(bars[1], width)
+    end
+    
+    local max_val = 1
+    for _, v in ipairs(history) do
+        if v > max_val then max_val = v end
+    end
+    
+    local result = ""
+    local start_idx = math.max(1, #history - width + 1)
+    for i = start_idx, #history do
+        local v = history[i] or 0
+        local idx = math.min(8, math.floor((v / max_val) * 7) + 1)
+        result = result .. bars[idx]
+    end
+    
+    local pad = width - (#history - start_idx + 1)
+    if pad > 0 then
+        result = string.rep(bars[1], pad) .. result
+    end
+    
+    return result
+end
+
+local function progress_bar(percent, width)
+    width = width or 10
+    local filled = math.floor((percent / 100) * width + 0.5)
+    return string.rep("█", filled) .. string.rep("░", width - filled)
+end
+
+local function signal_bar(dbm)
+    local s = tonumber(dbm) or -100
+    if s >= -50 then return "████" end
+    if s >= -60 then return "███░" end
+    if s >= -70 then return "██░░" end
+    if s >= -80 then return "█░░░" end
+    return "░░░░"
+end
+
+local function signal_icon(dbm)
+    local s = tonumber(dbm) or -100
+    if s >= -65 then return "📶" end
+    if s >= -75 then return "📶" end
+    if s >= -85 then return "📉" end
+    return "⚠️"
+end
+
+local function get_date()
+    local date = os.date("*t")
+    return {
+        day = string.format("%04d-%02d-%02d", date.year, date.month, date.day),
+        month = string.format("%04d-%02d", date.year, date.month)
+    }
+end
+
+-- ============================================================================
+-- Data Collection & Display
+-- ============================================================================
+
+local collected_data = {}
+local pending_requests = 0
+local config = nil
+
+local function generate_display(data)
+    local now = os.time()
+    local dt = now - state.prevTime
+    if dt <= 0 or dt > 120 then dt = 30 end
+    state.prevTime = now
+    
+    local o = ""
+    
+    if not data.resource then
+        return "⚠️ Cannot connect to router\n\nIP: " .. config.ip .. "\n\nTap to retry"
+    end
+    
+    local res = data.resource
+    local interfaces = data.interfaces or {}
+    local lte_info = data.lte_info
+    
+    -- Find interfaces
+    local lte, wifi_hotspot
+    for _, iface in ipairs(interfaces) do
+        local name = iface.name or ""
+        if name:match("^lte") then lte = iface end
+        if name:match("hotspot") then wifi_hotspot = iface end
+    end
+    
+    -- Parse system info
+    local cpu = tonumber(res["cpu-load"]) or 0
+    local mem_free = tonumber(res["free-memory"]) or 0
+    local mem_total = tonumber(res["total-memory"]) or 1
+    local mem = math.floor((1 - mem_free / mem_total) * 100)
+    local uptime = res.uptime or "0s"
+    
+    -- LTE signal
+    local signal = -100
+    if lte_info then
+        signal = tonumber(lte_info.rssi) or tonumber(lte_info.rsrp) or -100
+    end
+    
+    -- Calculate speeds
+    local total_down, total_up = 0, 0
+    if lte then
+        local rx = tonumber(lte["rx-byte"]) or 0
+        local tx = tonumber(lte["tx-byte"]) or 0
+        if state.prevLteRx > 0 then
+            total_down = math.max(0, (rx - state.prevLteRx) / dt)
+            total_up = math.max(0, (tx - state.prevLteTx) / dt)
+        end
+        state.prevLteRx = rx
+        state.prevLteTx = tx
+    end
+    
+    -- Update history
+    table.insert(state.hist_down, total_down * 8)
+    table.insert(state.hist_up, total_up * 8)
+    table.insert(state.hist_signal, signal)
+    
+    while #state.hist_down > 30 do table.remove(state.hist_down, 1) end
+    while #state.hist_up > 30 do table.remove(state.hist_up, 1) end
+    while #state.hist_signal > 30 do table.remove(state.hist_signal, 1) end
+    
+    -- Count clients
+    local client_count = 0
+    if data.wifi_clients then client_count = client_count + #data.wifi_clients end
+    if data.hotspot_clients then client_count = client_count + #data.hotspot_clients end
+    
+    -- Usage tracking
+    local dates = get_date()
+    local today_total = state.usage_daily[dates.day] or 0
+    local month_total = state.usage_monthly[dates.month] or 0
+    
+    if total_down > 0 or total_up > 0 then
+        local added = (total_down + total_up) * dt
+        today_total = today_total + added
+        month_total = month_total + added
+        state.usage_daily[dates.day] = today_total
+        state.usage_monthly[dates.month] = month_total
+    end
+    
+    -- Active WAN
+    local active_wan = "None"
+    if lte and lte.running == "true" then
+        active_wan = "LTE"
+    end
+    
+    -- ==================== COMPACT MODE ====================
+    if state.mode == "compact" then
+        o = o .. "📡 " .. active_wan .. " ↓" .. fmt(total_down*8) .. " ↑" .. fmt(total_up*8)
+        if lte and lte.running == "true" then
+            o = o .. " │ " .. signal .. "dBm"
+        end
+        o = o .. "\n👥 " .. client_count .. " │ 📊 " .. fmt_bytes(today_total)
+        o = o .. "\n" .. mini_graph(state.hist_down, 20)
+        save_state()
+        return o
+    end
+    
+    -- ==================== FULL MODE ====================
+    o = o .. "🖥 CPU " .. progress_bar(cpu, 5) .. " " .. cpu .. "% │ RAM " .. mem .. "%\n"
+    
+    local uptime_short = uptime:match("(%d+[wdhm])") or uptime
+    local uptime_short2 = uptime:match("%d+[wdhm](%d+[wdhm])") or ""
+    o = o .. "⏱ " .. uptime_short .. uptime_short2 .. " │ 🌐 " .. active_wan .. "\n"
+    o = o .. "━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    
+    -- LTE section
+    if lte then
+        local status = lte.running == "true" and "🟢" or "🔴"
+        local sig_icon = signal_icon(signal)
+        local sig_bar = signal_bar(signal)
+        o = o .. "📡 LTE " .. status .. " " .. sig_icon .. " " .. sig_bar .. " " .. signal .. "dBm\n"
+        
+        if lte_info then
+            local operator = lte_info.operator or ""
+            local tech = lte_info["access-technology"] or ""
+            if operator ~= "" then
+                o = o .. "   " .. operator .. " " .. tech .. "\n"
+            end
+        end
+        o = o .. "   ↓" .. fmt(total_down*8) .. " ↑" .. fmt(total_up*8) .. "\n"
+    end
+    
+    -- WiFi Hotspot section
+    if wifi_hotspot then
+        local status = wifi_hotspot.running == "true" and "🟢" or "🔴"
+        o = o .. "📻 Hotspot " .. status .. " │ 👥 " .. client_count .. "\n"
+    end
+    
+    -- Graphs section
+    o = o .. "\n📊 GRAPHS\n"
+    local max_down = 0
+    for _, v in ipairs(state.hist_down) do if v > max_down then max_down = v end end
+    o = o .. "↓ " .. mini_graph(state.hist_down, 15) .. " " .. fmt(max_down) .. "\n"
+    
+    local max_up = 0
+    for _, v in ipairs(state.hist_up) do if v > max_up then max_up = v end end
+    o = o .. "↑ " .. mini_graph(state.hist_up, 15) .. " " .. fmt(max_up) .. "\n"
+    
+    if #state.hist_signal > 0 then
+        local sig_graph = {}
+        for _, s in ipairs(state.hist_signal) do
+            table.insert(sig_graph, 100 + s)
+        end
+        o = o .. "📶 " .. mini_graph(sig_graph, 15) .. " " .. signal .. "dBm\n"
+    end
+    
+    -- Usage section
+    local daily_percent = math.min(100, (today_total / (config.dailyLimitGB * 1e9)) * 100)
+    local month_percent = math.min(100, (month_total / (config.monthlyLimitGB * 1e9)) * 100)
+    o = o .. "\n📈 DATA\n"
+    o = o .. "Day  " .. progress_bar(daily_percent, 8) .. " " .. fmt_bytes(today_total) .. "\n"
+    o = o .. "Mon  " .. progress_bar(month_percent, 8) .. " " .. fmt_bytes(month_total) .. "\n"
+    
+    -- Clients section
+    o = o .. "\n👥 CLIENTS (" .. client_count .. ")\n"
+    
+    local shown = 0
+    if data.hotspot_clients then
+        for _, c in ipairs(data.hotspot_clients) do
+            if shown >= config.maxClientsShow then break end
+            local name = (c.user or "?"):sub(1, 12)
+            local total = fmt_bytes((tonumber(c["bytes-in"]) or 0) + (tonumber(c["bytes-out"]) or 0))
+            o = o .. "• " .. name .. " " .. total .. "\n"
+            shown = shown + 1
+        end
+    end
+    
+    if data.wifi_clients then
+        local dhcp = data.dhcp_leases or {}
+        for _, c in ipairs(data.wifi_clients) do
+            if shown >= config.maxClientsShow then break end
+            local mac = c["mac-address"] or ""
+            local name = mac:sub(1, 8)
+            for _, l in ipairs(dhcp) do
+                if l["mac-address"] == mac then
+                    name = (l["host-name"] or mac):sub(1, 12)
+                    break
+                end
+            end
+            local sig_str = c["signal-strength"] or "-100"
+            local sig = tonumber(sig_str:match("-?%d+")) or -100
+            o = o .. "• " .. name .. " " .. signal_bar(sig) .. "\n"
+            shown = shown + 1
+        end
+    end
+    
+    if client_count > config.maxClientsShow then
+        o = o .. "  +" .. (client_count - config.maxClientsShow) .. " more\n"
+    end
+    
+    save_state()
+    return o
+end
+
+local function check_complete(on_complete)
+    pending_requests = pending_requests - 1
+    if pending_requests <= 0 then
+        on_complete(collected_data)
+    end
+end
+
+local function collect_all(on_complete)
+    collected_data = {}
+    pending_requests = 5
+    
+    local auth = "Basic " .. get_auth(config)
+    local base_url = "http://" .. config.ip .. "/rest"
+    
+    -- System resources
+    http:get(base_url .. "/system/resource", function(result, code)
+        if code == 200 and result then
+            collected_data.resource = json:decode(result)
+        end
+        check_complete(on_complete)
+    end, nil, {Authorization = auth})
+    
+    -- Interfaces
+    http:get(base_url .. "/interface", function(result, code)
+        if code == 200 and result then
+            collected_data.interfaces = json:decode(result)
+        end
+        check_complete(on_complete)
+    end, nil, {Authorization = auth})
+    
+    -- LTE info
+    http:get(base_url .. "/interface/lte/info", function(result, code)
+        if code == 200 and result then
+            local data = json:decode(result)
+            if data and data[1] then
+                collected_data.lte_info = data[1]
+            end
+        end
+        check_complete(on_complete)
+    end, nil, {Authorization = auth})
+    
+    -- Hotspot users
+    http:get(base_url .. "/ip/hotspot/active", function(result, code)
+        if code == 200 and result then
+            collected_data.hotspot_clients = json:decode(result)
+        end
+        check_complete(on_complete)
+    end, nil, {Authorization = auth})
+    
+    -- DHCP leases
+    http:get(base_url .. "/ip/dhcp-server/lease", function(result, code)
+        if code == 200 and result then
+            collected_data.dhcp_leases = json:decode(result)
+        end
+        check_complete(on_complete)
+    end, nil, {Authorization = auth})
+end
+
+-- ============================================================================
+-- Event Handlers
+-- ============================================================================
+
+function on_resume()
+    load_state()
+    config = get_config()
+    
+    ui:show_text("⏳ Loading...")
+    
+    collect_all(function(data)
+        local display = generate_display(data)
+        ui:show_text(display)
+    end)
+end
+
+function on_click()
+    config = get_config()
+    system:open_browser("http://" .. config.ip .. "/webfig/")
+end
+
+function on_long_click()
+    config = get_config()
+    
+    ui:show_context_menu({
+        "📊 Toggle Compact/Full",
+        "🔄 Refresh",
+        "⚙️ Set Router IP",
+        "🔐 Set Username",
+        "🔑 Set Password", 
+        "📡 Disable LTE",
+        "📡 Enable LTE",
+        "🗑️ Reset Stats"
+    })
+end
+
+function on_context_menu_click(idx)
+    config = get_config()
+    local auth = "Basic " .. get_auth(config)
+    local base_url = "http://" .. config.ip .. "/rest"
+    
+    if idx == 1 then
+        state.mode = state.mode == "compact" and "full" or "compact"
+        save_state()
+        on_resume()
+        
+    elseif idx == 2 then
+        on_resume()
+        
+    elseif idx == 3 then
+        ui:show_edit_dialog("Router IP", config.ip, function(value)
+            if value and value ~= "" then
+                settings:set("mt_ip", value)
+                system:toast("IP updated: " .. value)
+            end
+        end)
+        
+    elseif idx == 4 then
+        ui:show_edit_dialog("Username", config.username, function(value)
+            if value and value ~= "" then
+                settings:set("mt_username", value)
+                system:toast("Username updated")
+            end
+        end)
+        
+    elseif idx == 5 then
+        ui:show_edit_dialog("Password", config.password, function(value)
+            if value and value ~= "" then
+                settings:set("mt_password", value)
+                system:toast("Password updated")
+            end
+        end)
+        
+    elseif idx == 6 then
+        http:post(base_url .. "/interface/disable", '{"numbers":"lte1"}', function(result, code)
+            if code == 200 then
+                system:toast("LTE disabled")
+            else
+                system:toast("Failed: " .. (code or "?"))
+            end
+            on_resume()
+        end, nil, {Authorization = auth, ["Content-Type"] = "application/json"})
+        
+    elseif idx == 7 then
+        http:post(base_url .. "/interface/enable", '{"numbers":"lte1"}', function(result, code)
+            if code == 200 then
+                system:toast("LTE enabled")
+            else
+                system:toast("Failed: " .. (code or "?"))
+            end
+            on_resume()
+        end, nil, {Authorization = auth, ["Content-Type"] = "application/json"})
+        
+    elseif idx == 8 then
+        state.usage_daily = {}
+        state.usage_monthly = {}
+        state.hist_down = {}
+        state.hist_up = {}
+        state.hist_signal = {}
+        save_state()
+        system:toast("Stats reset")
+        on_resume()
+    end
+end

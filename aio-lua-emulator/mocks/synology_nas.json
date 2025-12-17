@@ -1,0 +1,34 @@
+{
+  "http://192.168.1.100:5000/webapi/auth.cgi": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "sid": "mock_session_id_12345"
+      }
+    }
+  },
+  "http://192.168.1.100:5000/webapi/entry.cgi": {
+    "status": 200,
+    "body": {
+      "success": true,
+      "data": {
+        "model": "DS920+",
+        "version_string": "7.2-64570",
+        "uptime": 864000,
+        "cpu": {
+          "user_load": 25
+        },
+        "memory": {
+          "total_kb": 4194304,
+          "used_kb": 2097152
+        },
+        "network": {
+          "rx": 1048576,
+          "tx": 524288
+        }
+      }
+    }
+  }
+}
+

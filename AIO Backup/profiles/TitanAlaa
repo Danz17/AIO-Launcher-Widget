@@ -1,0 +1,186 @@
+{
+    "name": "TitanAlaa",
+    "theme": "flat",
+    "showIcons": "appcategories",
+    "iconPack": "",
+    "iconShape": "more_rounded",
+    "iconSize": "normal",
+    "fontSize": "normal",
+    "fontName": "",
+    "monochromeIcons": false,
+    "wallpaperAlpha": "20",
+    "widgets": [
+        {
+            "type": "builtin",
+            "name": "first",
+            "label": "First",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "weather",
+            "label": "Clock and weather",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "notify",
+            "label": "Notifications",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "calendarw",
+            "label": "Calendar",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "appcategories",
+            "label": "App categories",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "appfolders",
+            "label": "App folders",
+            "folded": true,
+            "payload": "rO0ABXNyABNqYXZhLnV0aWwuQXJyYXlMaXN0eIHSHZnHYZ0DAAFJAARzaXpleHAAAAAAdwQAAAAAeA==",
+            "height": 3
+        },
+        {
+            "type": "plugin",
+            "name": "ru.execbit.aiosmscallslog/ru.execbit.aiosmscallslog.calls.CallsPluginReceiver",
+            "label": "Last calls",
+            "folded": false,
+            "payload": "",
+            "provider": "AIO SMS & Calls Plugin"
+        },
+        {
+            "type": "plugin",
+            "name": "ru.execbit.aiosmscallslog/ru.execbit.aiosmscallslog.sms.SmsPluginReceiver",
+            "label": "Last SMS",
+            "folded": true,
+            "payload": "",
+            "provider": "AIO SMS & Calls Plugin"
+        },
+        {
+            "type": "builtin",
+            "name": "player",
+            "label": "Player",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "monitor",
+            "label": "Monitor",
+            "folded": true,
+            "payload": "rO0ABXNyAD9ydS5leGVjYml0LmFpb2xhdW5jaGVyLmNhcmRzLm1vbml0b3IuTW9uaXRvckNhcmQkTW9uaXRvclBheWxvYWQAAAAAAAAAAQIAB1oAC3Nob3dCYXR0ZXJ5WgAOc2hvd0JyaWdodG5lc3NaAAhzaG93TmFuZFoAB3Nob3dSYW1aAA5zaG93U2NyZWVuVGltZVoAC3Nob3dUcmFmZmljTAAQY29tcGFjdEluZGljYXRvcnQAEkxqYXZhL2xhbmcvU3RyaW5nO3hwAQABAQABdAAHYmF0dGVyeQ==",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "apps",
+            "label": "Frequent apps",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "dialer",
+            "label": "Dialer",
+            "folded": true,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "calendar",
+            "label": "Calendar",
+            "folded": false,
+            "payload": "rO0ABXQAAA==",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "exchange",
+            "label": "Exchange Rates",
+            "folded": true,
+            "payload": "rO0ABXQACFBIUC9VU0Q6",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "financechart",
+            "label": "Financial Chart",
+            "folded": false,
+            "payload": "rO0ABXNyACJqYXZhLnV0aWwuQ29sbGVjdGlvbnMkU2luZ2xldG9uU2V0LFJBmCnAsb8CAAFMAAdlbGVtZW50dAASTGphdmEvbGFuZy9PYmplY3Q7eHBzcgAkcnUuZXhlY2JpdC5haW9sYXVuY2hlci5tb2RlbHMuVGlja2VyAAAAAAAAAAECAAZMAAhjdXJyZW5jeXQAEkxqYXZhL2xhbmcvU3RyaW5nO0wABG5hbWVxAH4ABEwABXByaWNlcQB+AARMAAlwcmljZURpZmZxAH4ABEwAB3NwYW5uZWR0ABZMYW5kcm9pZC90ZXh0L1NwYW5uZWQ7TAAGc3ltYm9scQB+AAR4cHQAA1VTRHQAC0JpdGNvaW4gVVNEdAAAcQB+AAlwdAAGQlRDVVNE",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "financechart_2",
+            "label": "Financial Chart",
+            "folded": false,
+            "payload": "rO0ABXNyAAJkTbjun04RXa11AgAAeHA=",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "financechart_1",
+            "label": "Financial Chart",
+            "folded": false,
+            "payload": "rO0ABXNyACJqYXZhLnV0aWwuQ29sbGVjdGlvbnMkU2luZ2xldG9uU2V0LFJBmCnAsb8CAAFMAAdlbGVtZW50dAASTGphdmEvbGFuZy9PYmplY3Q7eHBzcgAkcnUuZXhlY2JpdC5haW9sYXVuY2hlci5tb2RlbHMuVGlja2VyAAAAAAAAAAECAAZMAAhjdXJyZW5jeXQAEkxqYXZhL2xhbmcvU3RyaW5nO0wABG5hbWVxAH4ABEwABXByaWNlcQB+AARMAAlwcmljZURpZmZxAH4ABEwAB3NwYW5uZWR0ABZMYW5kcm9pZC90ZXh0L1NwYW5uZWQ7TAAGc3ltYm9scQB+AAR4cHQAA1VTRHQADEZhcnRjb2luIFVTRHQAAHEAfgAJcHQAC0ZBUlRDT0lOVVNE",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "timer",
+            "label": "Timer",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "recorder",
+            "label": "Audio recorder",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "tasks",
+            "label": "Tasks",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        },
+        {
+            "type": "builtin",
+            "name": "control",
+            "label": "Control panel",
+            "folded": false,
+            "payload": "",
+            "height": 3
+        }
+    ],
+    "external": false,
+    "author": "",
+    "description": "",
+    "version": ""
+}
