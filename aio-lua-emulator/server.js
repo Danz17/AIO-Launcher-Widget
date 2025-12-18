@@ -56,11 +56,13 @@ function initLua() {
     lua.lua_setglobal(L, to_luastring("json"));
     
     // Create system module
-    lua.lua_createtable(L, 0, 2);
+    lua.lua_createtable(L, 0, 3);
     lua.lua_pushcfunction(L, luaWrapFunction(system.open_browser, true));
     lua.lua_setfield(L, -2, to_luastring("open_browser"));
     lua.lua_pushcfunction(L, luaWrapFunction(system.toast, true));
     lua.lua_setfield(L, -2, to_luastring("toast"));
+    lua.lua_pushcfunction(L, luaWrapFunction(system.hmac_sha256, true));
+    lua.lua_setfield(L, -2, to_luastring("hmac_sha256"));
     lua.lua_setglobal(L, to_luastring("system"));
     
     // Create android module

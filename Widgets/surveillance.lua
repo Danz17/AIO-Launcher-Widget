@@ -105,6 +105,79 @@ local function getEvents(callback)
     end)
 end
 
+-- Get camera snapshot URL
+local function getCameraSnapshot(cameraId, callback)
+    synoLogin(function(sid)
+        if not sid then
+            callback(nil, "Login failed")
+            return
+        end
+        
+        local baseURL = getBaseURL()
+        -- Get snapshot: api=SYNO.SurveillanceStation.Camera&method=GetSnapshot&version=1
+        local url = baseURL .. "/webapi/entry.cgi?api=SYNO.SurveillanceStation.Camera&version=1&method=GetSnapshot&id=" .. cameraId .. "&_sid=" .. sid
+        
+        -- Note: This returns image data, but for display we'll just show the URL
+        callback(baseURL .. "/webapi/entry.cgi?api=SYNO.SurveillanceStation.Camera&version=1&method=GetSnapshot&id=" .. cameraId .. "&_sid=" .. sid, nil)
+    end)
+end
+
+-- Get live view URL
+local function getLiveViewUrl(cameraId)
+    local baseURL = getBaseURL()
+    -- Live view URL format (may vary by Synology version)
+    return baseURL .. "/webapi/entry.cgi?api=SYNO.SurveillanceStation.Camera&version=1&method=GetLiveViewPath&id=" .. cameraId
+end
+
+-- Enable/disable camera
+local function setCameraEnabled(cameraId, enabled, callback)
+    synoLogin(function(sid)
+        if not sid then
+            callback(false, "Login failed")
+            return
+        end
+        
+        local baseURL = getBaseURL()
+        local enableValue = enabled and 1 or 0
+        local url = baseURL .. "/webapi/entry.cgi?api=SYNO.SurveillanceStation.Camera&version=9&method=Enable&id=" .. cameraId .. "&enable=" .. enableValue .. "&_sid=" .. sid
+        
+        http:get(url, function(data, code)
+            if data and data ~= "" then
+                local ok, res = pcall(function() return json:decode(data) end)
+                if ok and res and res.success then
+                    callback(true, nil)
+                    return
+                end
+            end
+            callback(false, "Failed to set camera status")
+        end)
+    end)
+end
+
+-- Get storage usage
+local function getStorageUsage(callback)
+    synoLogin(function(sid)
+        if not sid then
+            callback(nil, "Login failed")
+            return
+        end
+        
+        local baseURL = getBaseURL()
+        local url = baseURL .. "/webapi/entry.cgi?api=SYNO.SurveillanceStation.Storage&version=1&method=List&_sid=" .. sid
+        
+        http:get(url, function(data, code)
+            if data and data ~= "" then
+                local ok, res = pcall(function() return json:decode(data) end)
+                if ok and res and res.success and res.data then
+                    callback(res.data, nil)
+                    return
+                end
+            end
+            callback(nil, "Failed to fetch storage")
+        end)
+    end)
+end
+
 -- MAIN FUNCTION
 
 function on_resume()
@@ -117,12 +190,14 @@ function on_resume()
         end
         
         getEvents(function(eventData, err2)
-            showStatus(cameraData, eventData)
+            getStorageUsage(function(storageData, storageErr)
+                showStatus(cameraData, eventData, storageData)
+            end)
         end)
     end)
 end
 
-function showStatus(cameraData, eventData)
+function showStatus(cameraData, eventData, storageData)
     local cameras = cameraData.cameras or {}
     local events = (eventData and eventData.events) or {}
     
@@ -138,14 +213,25 @@ function showStatus(cameraData, eventData)
         end
     end
     
-    -- Count recent events (last hour)
+    -- Count recent events (last hour) and motion events
     local recentEvents = 0
+    local motionEvents = 0
     local oneHourAgo = os.time() - 3600
     for _, event in ipairs(events) do
         local eventTime = tonumber(event.startTime) or 0
         if eventTime > oneHourAgo then
             recentEvents = recentEvents + 1
+            -- Check if it's a motion event
+            if event.eventType and (event.eventType == 1 or event.eventType == "motion" or 
+                (event.eventDesc and event.eventDesc:find("motion"))) then
+                motionEvents = motionEvents + 1
+            end
         end
+    end
+    
+    -- Alert on motion events
+    if motionEvents > 0 then
+        system:toast("⚠️ " .. motionEvents .. " motion event(s) in last hour")
     end
     
     local o = "📹 Surveillance Station\n"
@@ -164,7 +250,8 @@ function showStatus(cameraData, eventData)
             local rec = cam.recStatus == 1 and "🔴" or "⚪"
             local name = (cam.name or "Camera"):sub(1, 15)
             local padding = string.rep(" ", 15 - #name)
-            o = o .. status .. " " .. rec .. " " .. name .. padding .. "\n"
+            local snapshotIcon = cam.status == 1 and "📷" or ""
+            o = o .. status .. " " .. rec .. " " .. snapshotIcon .. " " .. name .. padding .. "\n"
         end
         if #cameras > 5 then
             o = o .. "  +" .. (#cameras - 5) .. " more\n"
@@ -173,33 +260,124 @@ function showStatus(cameraData, eventData)
     
     o = o .. "\n⚠️ RECENT EVENTS\n"
     if recentEvents > 0 then
-        o = o .. recentEvents .. " events in last hour\n"
-        local maxEvents = math.min(#events, 3)
+        o = o .. recentEvents .. " events (" .. motionEvents .. " motion) in last hour\n"
+        local maxEvents = math.min(#events, 5)
         for i = 1, maxEvents do
             local event = events[i]
             local eventTime = tonumber(event.startTime) or 0
             if eventTime > oneHourAgo then
                 local timeStr = fmtTime(eventTime)
                 local camName = (event.cameraName or "Camera"):sub(1, 12)
-                o = o .. "  " .. timeStr .. " " .. camName .. "\n"
+                local eventIcon = "📹"
+                if event.eventType and (event.eventType == 1 or event.eventType == "motion") then
+                    eventIcon = "🔴"
+                end
+                o = o .. "  " .. eventIcon .. " " .. timeStr .. " " .. camName .. "\n"
             end
         end
     else
         o = o .. "  No events in last hour\n"
     end
     
-    o = o .. "\n🔗 Tap: Open Surveillance │ Long: Refresh"
+    -- Storage usage
+    if storageData and storageData.storages then
+        o = o .. "\n💾 STORAGE\n"
+        local totalUsed = 0
+        local totalSize = 0
+        for _, storage in ipairs(storageData.storages) do
+            totalUsed = totalUsed + (tonumber(storage.used_size) or 0)
+            totalSize = totalSize + (tonumber(storage.total_size) or 0)
+        end
+        if totalSize > 0 then
+            local usedGB = totalUsed / (1024 * 1024 * 1024)
+            local totalGB = totalSize / (1024 * 1024 * 1024)
+            local percent = math.floor((totalUsed / totalSize) * 100)
+            o = o .. string.format("%.1fGB / %.1fGB (%d%%)\n", usedGB, totalGB, percent)
+            if percent > 90 then
+                o = o .. "⚠️ Storage nearly full!\n"
+            end
+        end
+    end
+    
+    o = o .. "\n🔗 Tap: Open Surveillance │ Long: Control"
     
     ui:show_text(o)
 end
 
 function on_click()
-    local baseURL = getBaseURL()
-    system:open_browser(baseURL)
+    -- Get first online camera for snapshot
+    getCameras(function(cameraData, err)
+        if not err and cameraData and cameraData.cameras then
+            for _, cam in ipairs(cameraData.cameras) do
+                if cam.status == 1 and cam.id then
+                    -- Open live view for first online camera
+                    local liveUrl = getLiveViewUrl(cam.id)
+                    system:open_browser(liveUrl)
+                    return
+                end
+            end
+        end
+        -- Fallback: open main Surveillance Station
+        local baseURL = getBaseURL()
+        system:open_browser(baseURL)
+    end)
 end
 
 function on_long_click()
-    session_sid = nil  -- Clear session
-    on_resume()
+    getCameras(function(cameraData, err)
+        if err or not cameraData or not cameraData.cameras then
+            session_sid = nil
+            on_resume()
+            return
+        end
+        
+        local cameras = cameraData.cameras
+        local cameraMenu = {}
+        for i, cam in ipairs(cameras) do
+            if i <= 5 then
+                local status = cam.status == 1 and "🟢" or "🔴"
+                table.insert(cameraMenu, status .. " " .. (cam.name or "Camera " .. i))
+            end
+        end
+        table.insert(cameraMenu, "🔄 Refresh")
+        table.insert(cameraMenu, "❌ Close")
+        
+        ui:show_context_menu(cameraMenu, function(selectedIdx)
+            if selectedIdx and selectedIdx > 0 and selectedIdx <= #cameras then
+                local cam = cameras[selectedIdx]
+                -- Show control options
+                ui:show_context_menu({
+                    cam.status == 1 and "⏸️ Disable" or "▶️ Enable",
+                    "📷 Snapshot",
+                    "📹 Live View",
+                    "❌ Cancel"
+                }, function(controlIdx)
+                    if controlIdx == 0 and cam.id then
+                        setCameraEnabled(cam.id, cam.status ~= 1, function(success, err)
+                            if success then
+                                system:toast("Camera " .. (cam.status == 1 and "disabled" or "enabled"))
+                                on_resume()
+                            else
+                                system:toast("Failed: " .. (err or "Unknown"))
+                            end
+                        end)
+                    elseif controlIdx == 1 and cam.id then
+                        getCameraSnapshot(cam.id, function(url, err)
+                            if url then
+                                system:open_browser(url)
+                            end
+                        end)
+                    elseif controlIdx == 2 and cam.id then
+                        local liveUrl = getLiveViewUrl(cam.id)
+                        system:open_browser(liveUrl)
+                    end
+                end)
+            elseif selectedIdx == #cameraMenu - 1 then
+                -- Refresh
+                session_sid = nil
+                on_resume()
+            end
+        end)
+    end)
 end
 

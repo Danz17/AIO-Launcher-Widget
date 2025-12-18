@@ -1,5 +1,6 @@
 // System API Emulation for AIO Launcher
 import chalk from 'chalk';
+import crypto from 'crypto';
 
 export const system = {
     open_browser: function(url) {
@@ -9,6 +10,18 @@ export const system = {
     
     toast: function(message) {
         console.log(chalk.yellow(`\n💬 Toast: ${message}`));
+    },
+    
+    // HMAC-SHA256 for Tuya API signature generation
+    hmac_sha256: function(key, message) {
+        try {
+            const hmac = crypto.createHmac('sha256', key);
+            hmac.update(message);
+            return hmac.digest('hex').toUpperCase();
+        } catch (e) {
+            console.error(chalk.red(`✗ HMAC-SHA256 error: ${e.message}`));
+            return null;
+        }
     }
 };
 

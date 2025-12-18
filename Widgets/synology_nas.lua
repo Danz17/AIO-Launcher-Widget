@@ -8,7 +8,11 @@ local CONFIG = {
     port = 5000,
     username = "admin",
     password = "admin",
-    useHTTPS = false
+    useHTTPS = true,  -- Enforce HTTPS for security (set false for local networks)
+    enforceHTTPS = true,  -- Force HTTPS even if useHTTPS is false (for external access)
+    apiVersion = nil,  -- Auto-detect if nil, or set specific version
+    storageAlertThreshold = 85,  -- Alert when storage > 85%
+    temperatureAlertThreshold = 70  -- Alert when temperature > 70°C
 }
 
 -- Base64 encode function
@@ -29,8 +33,35 @@ end
 -- UTILITY FUNCTIONS
 
 local function getBaseURL()
-    local protocol = CONFIG.useHTTPS and "https" or "http"
+    -- Enforce HTTPS if configured
+    local protocol = "http"
+    if CONFIG.enforceHTTPS or CONFIG.useHTTPS then
+        protocol = "https"
+    elseif CONFIG.useHTTPS then
+        protocol = "https"
+    end
     return protocol .. "://" .. CONFIG.ip .. ":" .. CONFIG.port
+end
+
+-- Detect API version
+local function detectAPIVersion(callback)
+    local baseURL = getBaseURL()
+    local url = baseURL .. "/webapi/query.cgi?api=SYNO.API.Info&version=1&method=query&query=SYNO.Core.System"
+    
+    http:get(url, function(data, code)
+        if data and data ~= "" then
+            local ok, res = pcall(function() return json:decode(data) end)
+            if ok and res and res.success and res.data and res.data["SYNO.Core.System"] then
+                local maxVersion = res.data["SYNO.Core.System"].maxVersion or 1
+                CONFIG.apiVersion = maxVersion
+                callback(maxVersion)
+                return
+            end
+        end
+        -- Fallback to version 1
+        CONFIG.apiVersion = CONFIG.apiVersion or 1
+        callback(CONFIG.apiVersion)
+    end)
 end
 
 local function fmtBytes(bytes)
@@ -61,13 +92,23 @@ end
 -- SYNOLOGY API FUNCTIONS
 
 local session_sid = nil
+local session_expiry = 0  -- Timestamp when session expires
+local SESSION_DURATION = 20 * 60  -- 20 minutes in seconds
+local REFRESH_BEFORE = 18 * 60   -- Refresh at 18 minutes (2 min before expiry)
 
-local function synoLogin(callback)
-    if session_sid then
-        callback(session_sid)
-        return
+local function synoLogin(callback, forceRefresh)
+    local now = os.time()
+    
+    -- Check if session is still valid and not expired soon
+    if session_sid and not forceRefresh then
+        if now < session_expiry - (SESSION_DURATION - REFRESH_BEFORE) then
+            -- Session is still fresh (less than 18 minutes old)
+            callback(session_sid)
+            return
+        end
     end
     
+    -- Need to login or refresh
     local baseURL = getBaseURL()
     local url = baseURL .. "/webapi/auth.cgi?api=SYNO.API.Auth&version=3&method=login&account=" .. CONFIG.username .. "&passwd=" .. CONFIG.password .. "&session=FileStation&format=sid"
     
@@ -76,10 +117,14 @@ local function synoLogin(callback)
             local ok, res = pcall(function() return json:decode(data) end)
             if ok and res and res.success and res.data and res.data.sid then
                 session_sid = res.data.sid
+                session_expiry = now + SESSION_DURATION
                 callback(session_sid)
                 return
             end
         end
+        -- Clear invalid session
+        session_sid = nil
+        session_expiry = 0
         callback(nil)
     end)
 end
@@ -92,7 +137,101 @@ local function synoGetSystemInfo(callback)
         end
         
         local baseURL = getBaseURL()
-        local url = baseURL .. "/webapi/entry.cgi?api=SYNO.Core.System&version=1&method=info&_sid=" .. sid
+        local apiVer = CONFIG.apiVersion or 1
+        local url = baseURL .. "/webapi/entry.cgi?api=SYNO.Core.System&version=" .. apiVer .. "&method=info&_sid=" .. sid
+        
+        http:get(url, function(data, code)
+            if data and data ~= "" then
+                local ok, res = pcall(function() return json:decode(data) end)
+                if ok and res and res.success and res.data then
+                    callback(res.data)
+                    return
+                elseif res and res.error and res.error.code == 105 then
+                    -- Session expired, force refresh
+                    synoLogin(function(newSid)
+                        if newSid then
+                            -- Retry with new session
+                            local retryUrl = baseURL .. "/webapi/entry.cgi?api=SYNO.Core.System&version=1&method=info&_sid=" .. newSid
+                            http:get(retryUrl, function(retryData, retryCode)
+                                if retryData and retryData ~= "" then
+                                    local retryOk, retryRes = pcall(function() return json:decode(retryData) end)
+                                    if retryOk and retryRes and retryRes.success and retryRes.data then
+                                        callback(retryRes.data)
+                                        return
+                                    end
+                                end
+                                callback(nil)
+                            end)
+                        else
+                            callback(nil)
+                        end
+                    end, true)
+                    return
+                end
+            end
+            callback(nil)
+        end)
+    end)
+end
+
+local function synoGetServices(callback)
+    synoLogin(function(sid)
+        if not sid then
+            callback(nil)
+            return
+        end
+        
+        local baseURL = getBaseURL()
+        local apiVer = CONFIG.apiVersion or 1
+        local url = baseURL .. "/webapi/entry.cgi?api=SYNO.Core.Service&version=1&method=list&_sid=" .. sid
+        
+        http:get(url, function(data, code)
+            if data and data ~= "" then
+                local ok, res = pcall(function() return json:decode(data) end)
+                if ok and res and res.success and res.data then
+                    callback(res.data)
+                    return
+                end
+            end
+            callback(nil)
+        end)
+    end)
+end
+
+local function synoGetStorage(callback)
+    synoLogin(function(sid)
+        if not sid then
+            callback(nil)
+            return
+        end
+        
+        local baseURL = getBaseURL()
+        local url = baseURL .. "/webapi/entry.cgi?api=SYNO.Storage.CGI.Storage&version=1&method=load_info&_sid=" .. sid
+        
+        http:get(url, function(data, code)
+            if data and data ~= "" then
+                local ok, res = pcall(function() return json:decode(data) end)
+                if ok and res and res.success and res.data then
+                    callback(res.data)
+                    return
+                end
+            end
+            callback(nil)
+        end)
+    end)
+end
+
+local function synoGetTemperature(callback)
+    synoLogin(function(sid)
+        if not sid then
+            callback(nil)
+            return
+        end
+        
+        local baseURL = getBaseURL()
+        local apiVer = CONFIG.apiVersion or 1
+        -- Temperature is usually in utilization data
+        local url = baseURL .. "/webapi/entry.cgi?api=SYNO.Core.System.Utilization&version=" .. apiVer .. "&method=get&_sid=" .. sid
         
         http:get(url, function(data, code)
             if data and data ~= "" then
@@ -115,13 +254,35 @@ local function synoGetUtilization(callback)
         end
         
         local baseURL = getBaseURL()
-        local url = baseURL .. "/webapi/entry.cgi?api=SYNO.Core.System.Utilization&version=1&method=get&_sid=" .. sid
+        local apiVer = CONFIG.apiVersion or 1
+        local url = baseURL .. "/webapi/entry.cgi?api=SYNO.Core.System.Utilization&version=" .. apiVer .. "&method=get&_sid=" .. sid
         
         http:get(url, function(data, code)
             if data and data ~= "" then
                 local ok, res = pcall(function() return json:decode(data) end)
                 if ok and res and res.success and res.data then
                     callback(res.data)
+                    return
+                elseif res and res.error and res.error.code == 105 then
+                    -- Session expired, force refresh
+                    synoLogin(function(newSid)
+                        if newSid then
+                            -- Retry with new session
+                            local retryUrl = baseURL .. "/webapi/entry.cgi?api=SYNO.Core.System.Utilization&version=1&method=get&_sid=" .. newSid
+                            http:get(retryUrl, function(retryData, retryCode)
+                                if retryData and retryData ~= "" then
+                                    local retryOk, retryRes = pcall(function() return json:decode(retryData) end)
+                                    if retryOk and retryRes and retryRes.success and retryRes.data then
+                                        callback(retryRes.data)
+                                        return
+                                    end
+                                end
+                                callback(nil)
+                            end)
+                        else
+                            callback(nil)
+                        end
+                    end, true)
                     return
                 end
             end
@@ -135,6 +296,18 @@ end
 function on_resume()
     ui:show_text("⏳ Connecting to NAS...")
     
+    -- Detect API version on first run
+    if not CONFIG.apiVersion then
+        detectAPIVersion(function(version)
+            -- Continue with normal flow
+            fetchSystemData()
+        end)
+    else
+        fetchSystemData()
+    end
+end
+
+function fetchSystemData()
     -- Fetch system info first
     synoGetSystemInfo(function(sysInfo)
         if not sysInfo then
@@ -142,14 +315,38 @@ function on_resume()
             return
         end
         
-        -- Then fetch utilization
-        synoGetUtilization(function(util)
-            if not util then
-                showBasicInfo(sysInfo)
-                return
+        -- Fetch multiple data sources in parallel
+        local utilData = nil
+        local storageData = nil
+        local serviceData = nil
+        local tempData = nil
+        local pending = 4
+        
+        local function checkComplete()
+            pending = pending - 1
+            if pending == 0 then
+                showFullInfo(sysInfo, utilData, storageData, serviceData, tempData)
             end
-            
-            showFullInfo(sysInfo, util)
+        end
+        
+        synoGetUtilization(function(util)
+            utilData = util
+            checkComplete()
+        end)
+        
+        synoGetStorage(function(storage)
+            storageData = storage
+            checkComplete()
+        end)
+        
+        synoGetServices(function(services)
+            serviceData = services
+            checkComplete()
+        end)
+        
+        synoGetTemperature(function(temp)
+            tempData = temp
+            checkComplete()
         end)
     end)
 end
@@ -166,20 +363,20 @@ function showBasicInfo(sysInfo)
     ui:show_text(o)
 end
 
-function showFullInfo(sysInfo, util)
+function showFullInfo(sysInfo, util, storage, services, temp)
     local model = sysInfo.model or "Unknown"
     local version = sysInfo.version_string or ""
     local uptime = sysInfo.uptime or 0
     
     local cpu = 0
-    if util.cpu and util.cpu.user_load then
+    if util and util.cpu and util.cpu.user_load then
         cpu = tonumber(util.cpu.user_load) or 0
     end
     
     local memTotal = 0
     local memUsed = 0
     local memPercent = 0
-    if util.memory then
+    if util and util.memory then
         memTotal = tonumber(util.memory.total_kb) or 0
         memUsed = tonumber(util.memory.used_kb) or 0
         if memTotal > 0 then
@@ -197,7 +394,56 @@ function showFullInfo(sysInfo, util)
     o = o .. "RAM " .. progressBar(memPercent, 10) .. " " .. memPercent .. "%\n"
     o = o .. "    " .. fmtBytes(memUsed * 1024) .. " / " .. fmtBytes(memTotal * 1024) .. "\n"
     
-    if util.network then
+    -- Temperature monitoring
+    if temp and temp.temperature then
+        local cpuTemp = tonumber(temp.temperature.cpu) or 0
+        local diskTemp = tonumber(temp.temperature.disk) or 0
+        o = o .. "\n🌡️ TEMPERATURE\n"
+        o = o .. "CPU: " .. cpuTemp .. "°C"
+        if cpuTemp > CONFIG.temperatureAlertThreshold then
+            o = o .. " ⚠️"
+        end
+        o = o .. "\n"
+        if diskTemp > 0 then
+            o = o .. "Disk: " .. diskTemp .. "°C"
+            if diskTemp > CONFIG.temperatureAlertThreshold then
+                o = o .. " ⚠️"
+            end
+            o = o .. "\n"
+        end
+    end
+    
+    -- Storage alerts
+    if storage and storage.volumes then
+        o = o .. "\n💾 STORAGE\n"
+        for _, volume in ipairs(storage.volumes) do
+            local used = tonumber(volume.used_size) or 0
+            local total = tonumber(volume.total_size) or 0
+            if total > 0 then
+                local percent = math.floor((used / total) * 100)
+                local name = volume.name or "Volume"
+                o = o .. name .. ": " .. percent .. "%"
+                if percent > CONFIG.storageAlertThreshold then
+                    o = o .. " ⚠️"
+                end
+                o = o .. "\n"
+            end
+        end
+    end
+    
+    -- Service status
+    if services and services.services then
+        o = o .. "\n🔧 SERVICES\n"
+        local runningCount = 0
+        for _, service in ipairs(services.services) do
+            if service.status == "running" then
+                runningCount = runningCount + 1
+            end
+        end
+        o = o .. runningCount .. " / " .. #services.services .. " running\n"
+    end
+    
+    if util and util.network then
         local rxBytes = tonumber(util.network.rx) or 0
         local txBytes = tonumber(util.network.tx) or 0
         o = o .. "\n🌐 NETWORK\n"
@@ -216,6 +462,7 @@ end
 
 function on_long_click()
     session_sid = nil  -- Clear session to force re-login
+    session_expiry = 0
     on_resume()
 end
 
