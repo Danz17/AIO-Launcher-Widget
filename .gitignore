@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.widget-storage/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build
+dist/
+build/
+*.tgz
+
+# Environment
+.env
+.env.local
+*.local
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Backup archives (keep folder, ignore zip)
+*.zip
+
+# Claude Code
+.claude/

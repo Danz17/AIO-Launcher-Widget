@@ -33,13 +33,8 @@ end
 -- UTILITY FUNCTIONS
 
 local function getBaseURL()
-    -- Enforce HTTPS if configured
-    local protocol = "http"
-    if CONFIG.enforceHTTPS or CONFIG.useHTTPS then
-        protocol = "https"
-    elseif CONFIG.useHTTPS then
-        protocol = "https"
-    end
+    -- Use HTTPS if either useHTTPS or enforceHTTPS is enabled
+    local protocol = (CONFIG.enforceHTTPS or CONFIG.useHTTPS) and "https" or "http"
     return protocol .. "://" .. CONFIG.ip .. ":" .. CONFIG.port
 end
 
@@ -108,11 +103,20 @@ local function synoLogin(callback, forceRefresh)
         end
     end
     
-    -- Need to login or refresh
+    -- Need to login or refresh - use POST to avoid credentials in URL
     local baseURL = getBaseURL()
-    local url = baseURL .. "/webapi/auth.cgi?api=SYNO.API.Auth&version=3&method=login&account=" .. CONFIG.username .. "&passwd=" .. CONFIG.password .. "&session=FileStation&format=sid"
-    
-    http:get(url, function(data, code)
+    local url = baseURL .. "/webapi/auth.cgi"
+    local body = {
+        api = "SYNO.API.Auth",
+        version = 3,
+        method = "login",
+        account = CONFIG.username,
+        passwd = CONFIG.password,
+        session = "FileStation",
+        format = "sid"
+    }
+
+    http:post(url, json:encode(body), function(data, code)
         if data and data ~= "" then
             local ok, res = pcall(function() return json:decode(data) end)
             if ok and res and res.success and res.data and res.data.sid then

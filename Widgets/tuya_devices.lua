@@ -119,7 +119,7 @@ local function getOAuthToken(callback)
             local ok, res = pcall(function() return json:decode(data) end)
             if ok and res and res.success and res.result then
                 CONFIG.oauthToken = res.result.access_token
-                CONFIG.tokenExpiry = now + (res.result.expire_time or 7200)  -- Default 2 hours
+                CONFIG.tokenExpiry = os.time() + (res.result.expire_time or 7200)  -- Default 2 hours
                 callback(CONFIG.oauthToken, nil)
                 return
             end

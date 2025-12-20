@@ -12,6 +12,7 @@ import { ui, selectMenuOption, hasContextMenu, getContextMenuItems, clearOutput 
 import { http, loadMocks, isUsingMocks } from './api/http.js';
 import { json } from './api/json.js';
 import { system } from './api/system.js';
+import { storage, files } from './api/storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -26,11 +27,31 @@ function initLua() {
     L = lauxlib.luaL_newstate();
     lualib.luaL_openlibs(L);
     
-    // Create ui module
-    lua.lua_createtable(L, 0, 2);
-    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_text, true)); // Skip first arg (module itself)
+    // Create ui module with all display functions
+    lua.lua_createtable(L, 0, 12);
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_text, true));
     lua.lua_setfield(L, -2, to_luastring("show_text"));
-    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_context_menu, true)); // Skip first arg (module itself)
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_lines, true));
+    lua.lua_setfield(L, -2, to_luastring("show_lines"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_buttons, true));
+    lua.lua_setfield(L, -2, to_luastring("show_buttons"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_table, true));
+    lua.lua_setfield(L, -2, to_luastring("show_table"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_progress_bar, true));
+    lua.lua_setfield(L, -2, to_luastring("show_progress_bar"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_chart, true));
+    lua.lua_setfield(L, -2, to_luastring("show_chart"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_toast, true));
+    lua.lua_setfield(L, -2, to_luastring("show_toast"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.set_title, true));
+    lua.lua_setfield(L, -2, to_luastring("set_title"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.set_expandable, true));
+    lua.lua_setfield(L, -2, to_luastring("set_expandable"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.is_folded, true));
+    lua.lua_setfield(L, -2, to_luastring("is_folded"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.is_expanded, true));
+    lua.lua_setfield(L, -2, to_luastring("is_expanded"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_context_menu, true));
     lua.lua_setfield(L, -2, to_luastring("show_context_menu"));
     lua.lua_setglobal(L, to_luastring("ui"));
     
@@ -57,6 +78,32 @@ function initLua() {
     lua.lua_pushcfunction(L, luaWrapFunction(system.toast));
     lua.lua_setfield(L, -2, to_luastring("toast"));
     lua.lua_setglobal(L, to_luastring("system"));
+
+    // Create storage module for persistent data
+    lua.lua_createtable(L, 0, 6);
+    lua.lua_pushcfunction(L, luaWrapFunction(storage.get, true));
+    lua.lua_setfield(L, -2, to_luastring("get"));
+    lua.lua_pushcfunction(L, luaWrapFunction(storage.set, true));
+    lua.lua_setfield(L, -2, to_luastring("set"));
+    lua.lua_pushcfunction(L, luaWrapFunction(storage.delete, true));
+    lua.lua_setfield(L, -2, to_luastring("delete"));
+    lua.lua_pushcfunction(L, luaWrapFunction(storage.has, true));
+    lua.lua_setfield(L, -2, to_luastring("has"));
+    lua.lua_pushcfunction(L, luaWrapFunction(storage.keys, true));
+    lua.lua_setfield(L, -2, to_luastring("keys"));
+    lua.lua_pushcfunction(L, luaWrapFunction(storage.clear, true));
+    lua.lua_setfield(L, -2, to_luastring("clear"));
+    lua.lua_setglobal(L, to_luastring("storage"));
+
+    // Create files module for file I/O
+    lua.lua_createtable(L, 0, 3);
+    lua.lua_pushcfunction(L, luaWrapFunction(files.read, true));
+    lua.lua_setfield(L, -2, to_luastring("read"));
+    lua.lua_pushcfunction(L, luaWrapFunction(files.write, true));
+    lua.lua_setfield(L, -2, to_luastring("write"));
+    lua.lua_pushcfunction(L, luaWrapFunction(files.exists, true));
+    lua.lua_setfield(L, -2, to_luastring("exists"));
+    lua.lua_setglobal(L, to_luastring("files"));
 }
 
 // Wrap JavaScript function for Lua

@@ -216,12 +216,6 @@ function showStatus(status)
     ui:show_text(o)
 end
 
-function on_click()
-    system:toast("Opening Enpass...")
-    -- Try to open Enpass app
-    -- system:open_app("com.sinex.enpass")
-end
-
 local function searchItems(query, callback)
     -- Search functionality (would integrate with Enpass API)
     if not CONFIG.serverUrl or CONFIG.serverUrl == "" then

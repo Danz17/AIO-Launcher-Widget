@@ -42,11 +42,21 @@ local function synoLogin(callback)
         callback(session_sid)
         return
     end
-    
+
+    -- Use POST to avoid credentials in URL (more secure)
     local baseURL = getBaseURL()
-    local url = baseURL .. "/webapi/auth.cgi?api=SYNO.API.Auth&version=3&method=login&account=" .. CONFIG.username .. "&passwd=" .. CONFIG.password .. "&session=SurveillanceStation&format=sid"
-    
-    http:get(url, function(data, code)
+    local url = baseURL .. "/webapi/auth.cgi"
+    local body = {
+        api = "SYNO.API.Auth",
+        version = 3,
+        method = "login",
+        account = CONFIG.username,
+        passwd = CONFIG.password,
+        session = "SurveillanceStation",
+        format = "sid"
+    }
+
+    http:post(url, json:encode(body), function(data, code)
         if data and data ~= "" then
             local ok, res = pcall(function() return json:decode(data) end)
             if ok and res and res.success and res.data and res.data.sid then

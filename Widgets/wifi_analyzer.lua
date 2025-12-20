@@ -352,7 +352,10 @@ function on_long_click()
             local sorts = {"signal", "name", "security"}
             local currentIdx = 1
             for i, v in ipairs(sorts) do
-                if v == CONFIG.sortBy then currentIdx = i break end
+                if v == CONFIG.sortBy then
+                    currentIdx = i
+                    break
+                end
             end
             local nextIdx = (currentIdx % #sorts) + 1
             CONFIG.sortBy = sorts[nextIdx]

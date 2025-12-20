@@ -96,6 +96,50 @@ local function getChangeColor(change)
     return num >= 0 and "🟢" or "🔴"
 end
 
+-- Price alert checking (moved before usage)
+local function checkPriceAlerts(symbol, price)
+    if not CONFIG.alerts[symbol] or not price then
+        return
+    end
+
+    local alert = CONFIG.alerts[symbol]
+    local alertKey = symbol .. "_"
+
+    -- Check above threshold
+    if alert.above and price >= alert.above then
+        local key = alertKey .. "above"
+        if not alertTriggered[key] then
+            alertTriggered[key] = true
+            system:toast("🔔 " .. symbol .. " above $" .. fmtPrice(alert.above) .. "!")
+        end
+    else
+        -- Reset if price drops below
+        if alert.above then
+            local key = alertKey .. "above"
+            if price < alert.above then
+                alertTriggered[key] = false
+            end
+        end
+    end
+
+    -- Check below threshold
+    if alert.below and price <= alert.below then
+        local key = alertKey .. "below"
+        if not alertTriggered[key] then
+            alertTriggered[key] = true
+            system:toast("🔔 " .. symbol .. " below $" .. fmtPrice(alert.below) .. "!")
+        end
+    else
+        -- Reset if price rises above
+        if alert.below then
+            local key = alertKey .. "below"
+            if price > alert.below then
+                alertTriggered[key] = false
+            end
+        end
+    end
+end
+
 -- BINANCE API FUNCTIONS
 
 local priceHistory = {}
@@ -298,50 +342,6 @@ local function getAllTickers(symbols, callback)
     end)
 end
 
--- Price alert checking
-local function checkPriceAlerts(symbol, price)
-    if not CONFIG.alerts[symbol] or not price then
-        return
-    end
-    
-    local alert = CONFIG.alerts[symbol]
-    local alertKey = symbol .. "_"
-    
-    -- Check above threshold
-    if alert.above and price >= alert.above then
-        local key = alertKey .. "above"
-        if not alertTriggered[key] then
-            alertTriggered[key] = true
-            system:toast("🔔 " .. symbol .. " above $" .. fmtPrice(alert.above) .. "!")
-        end
-    else
-        -- Reset if price drops below
-        if alert.above then
-            local key = alertKey .. "above"
-            if price < alert.above then
-                alertTriggered[key] = false
-            end
-        end
-    end
-    
-    -- Check below threshold
-    if alert.below and price <= alert.below then
-        local key = alertKey .. "below"
-        if not alertTriggered[key] then
-            alertTriggered[key] = true
-            system:toast("🔔 " .. symbol .. " below $" .. fmtPrice(alert.below) .. "!")
-        end
-    else
-        -- Reset if price rises above
-        if alert.below then
-            local key = alertKey .. "below"
-            if price > alert.below then
-                alertTriggered[key] = false
-            end
-        end
-    end
-end
-
 -- MAIN FUNCTION
 
 function on_resume()
@@ -410,11 +410,15 @@ function showPrices(tickers)
         
         -- Volume trend analysis
         if ticker.volume and ticker.quoteVolume then
-            local volRatio = tonumber(ticker.volume) / (tonumber(ticker.quoteVolume) or 1)
-            if volRatio > 1.5 then
-                o = o .. "     📈 High volume activity\n"
-            elseif volRatio < 0.5 then
-                o = o .. "     📉 Low volume\n"
+            local vol = tonumber(ticker.volume)
+            local quoteVol = tonumber(ticker.quoteVolume)
+            if vol and quoteVol and quoteVol > 0 then
+                local volRatio = vol / quoteVol
+                if volRatio > 1.5 then
+                    o = o .. "     📈 High volume activity\n"
+                elseif volRatio < 0.5 then
+                    o = o .. "     📉 Low volume\n"
+                end
             end
         end
     end
