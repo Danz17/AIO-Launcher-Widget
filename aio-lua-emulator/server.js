@@ -366,13 +366,13 @@ app.post('/api/mocks/:filename', (req, res) => {
 app.get('/api/widgets', (req, res) => {
     try {
         const widgetsDir = resolve(__dirname, '..', 'Widgets');
-        const mikrotikDir = resolve(__dirname, '..', 'Mikrotik');
+        const mikrotikDir = resolve(__dirname, '..', 'Widgets', 'Mikrotik');
         const widgets = [];
         
-        // Scan Widgets directory
+        // Scan Widgets directory (excluding Mikrotik subfolder)
         if (existsSync(widgetsDir)) {
             const files = readdirSync(widgetsDir)
-                .filter(f => f.endsWith('.lua'))
+                .filter(f => f.endsWith('.lua') && f !== 'Mikrotik')
                 .map(f => ({
                     name: f.replace('.lua', ''),
                     path: join(widgetsDir, f),
@@ -381,7 +381,7 @@ app.get('/api/widgets', (req, res) => {
             widgets.push(...files);
         }
         
-        // Scan Mikrotik directory
+        // Scan Mikrotik directory (now inside Widgets folder)
         if (existsSync(mikrotikDir)) {
             const files = readdirSync(mikrotikDir)
                 .filter(f => f.endsWith('.lua'))

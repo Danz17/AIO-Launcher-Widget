@@ -281,6 +281,35 @@ http:get(url)
 
 ## Sources
 
-- [Official Repo](https://github.com/zobnin/aiolauncher_scripts)
-- [README](https://github.com/zobnin/aiolauncher_scripts/blob/master/README.md)
-- [Intro Guide](https://github.com/zobnin/aiolauncher_scripts/blob/master/README_INTRO.md)
+### AIO Launcher Official Resources
+
+- [Official Scripts Repository](https://github.com/zobnin/aiolauncher_scripts) - Community widget scripts
+- [README](https://github.com/zobnin/aiolauncher_scripts/blob/master/README.md) - Getting started guide
+- [Intro Guide](https://github.com/zobnin/aiolauncher_scripts/blob/master/README_INTRO.md) - Introduction to widget scripting
+
+### Official Lua Documentation (by Lua Creators)
+
+- [Lua 5.4 Reference Manual](https://www.lua.org/manual/5.4/) - Official language definition, syntax, semantics, standard libraries, and C API
+- [Lua 5.1 Reference Manual](https://www.lua.org/manual/5.1/) - Version 5.1 reference (AIO Launcher uses Lua 5.1)
+- [Programming in Lua](https://www.lua.org/pil/) - Comprehensive book by Roberto Ierusalimschy (Lua's chief architect)
+- [Lua Documentation Hub](https://www.lua.org/docs.html) - All official documentation, technical notes, FAQs, and papers
+- [Getting Started with Lua](https://www.lua.org/start.html) - Beginner's guide to Lua programming
+
+### Key Publications by Lua Creators
+
+- **"Lua – an extensible extension language"** - Philosophy behind Lua's design (R. Ierusalimschy, L. H. de Figueiredo, W. Celes, 1996)
+- **"A look at the design of Lua"** - Overview of Lua's design principles (R. Ierusalimschy, L. H. de Figueiredo, W. Celes, 2018)
+- **"The evolution of Lua"** - Complete history of Lua (R. Ierusalimschy, L. H. de Figueiredo, W. Celes, 2007)
+- **"The evolution of Lua, continued"** - Recent evolution updates (2025)
+
+### Additional Resources
+
+- [Lua Users Wiki](http://lua-users.org/wiki/) - Community tutorials, code snippets, and discussions
+- [LuaJIT](https://luajit.org/) - Just-In-Time Compiler for Lua (performance enhancement)
+- [LuaDoc](https://keplerproject.github.io/luadoc/) - Documentation generator for Lua source code
+
+### Notes
+
+- AIO Launcher uses **Lua 5.1** - Refer to Lua 5.1 Reference Manual for version-specific features
+- Widget scripts are stored at: `/sdcard/Android/data/ru.execbit.aiolauncher/files/`
+- All API functions use colon syntax: `module:function()` (passes module as first argument)
