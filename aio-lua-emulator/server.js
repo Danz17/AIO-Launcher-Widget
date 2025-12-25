@@ -11,7 +11,7 @@ import { ui, clearOutput, getOutputBuffer } from './api/ui.js';
 import { http, loadMocks, setHttpMode, setHttpLogCallback } from './api/http.js';
 import { json } from './api/json.js';
 import { system } from './api/system.js';
-import { android } from './api/android.js';
+import { android, setMockData } from './api/android.js';
 import { storage, files } from './api/storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -698,6 +698,50 @@ app.post('/api/settings', (req, res) => {
 
 app.get('/api/settings', (req, res) => {
     res.json(currentSettings);
+});
+
+// Mock data endpoint for Android API customization
+app.post('/api/mock-data', (req, res) => {
+    const data = req.body;
+
+    // Update battery mock data
+    if (data.batteryLevel !== undefined || data.batteryCharging !== undefined || data.batteryTemp !== undefined) {
+        setMockData('battery', {
+            level: data.batteryLevel,
+            isCharging: data.batteryCharging,
+            temperature: data.batteryTemp
+        });
+    }
+
+    // Update wifi mock data
+    if (data.wifiSignal !== undefined || data.wifiSsid !== undefined || data.netConnected !== undefined) {
+        setMockData('wifi', {
+            connectedSSID: data.wifiSsid,
+            enabled: data.netConnected,
+            networks: [{
+                ssid: data.wifiSsid,
+                bssid: "00:11:22:33:44:55",
+                rssi: data.wifiSignal,
+                frequency: 5180,
+                capabilities: "WPA2-PSK"
+            }]
+        });
+    }
+
+    // Update device mock data
+    if (data.deviceModel !== undefined || data.osVersion !== undefined) {
+        setMockData('device', {
+            model: data.deviceModel,
+            osVersion: data.osVersion
+        });
+    }
+
+    // Update brightness
+    if (data.brightness !== undefined) {
+        setMockData('brightness', data.brightness);
+    }
+
+    res.json({ success: true, message: 'Mock data updated' });
 });
 
 // MikroTik monitoring endpoints

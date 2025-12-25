@@ -960,6 +960,129 @@ document.addEventListener('DOMContentLoaded', () => {
     executeScript('on_long_click');
   });
 
+  document.getElementById('onAlarmBtn').addEventListener('click', () => {
+    executeScript('on_alarm');
+  });
+
+  // Widget size selector
+  const widgetSizeSelect = document.getElementById('widgetSize');
+  const widgetCard = document.querySelector('.widget-card');
+
+  // Load saved size preference
+  const savedSize = localStorage.getItem('widgetSize');
+  if (savedSize) {
+    widgetSizeSelect.value = savedSize;
+    widgetCard.style.setProperty('--widget-width', savedSize + 'px');
+  }
+
+  widgetSizeSelect.addEventListener('change', (e) => {
+    const size = e.target.value;
+    widgetCard.style.setProperty('--widget-width', size + 'px');
+    localStorage.setItem('widgetSize', size);
+  });
+
+  // Theme toggle
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  const themeIconDark = themeToggleBtn.querySelector('.theme-icon-dark');
+  const themeIconLight = themeToggleBtn.querySelector('.theme-icon-light');
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    if (theme === 'light') {
+      themeIconDark.style.display = 'none';
+      themeIconLight.style.display = 'block';
+    } else {
+      themeIconDark.style.display = 'block';
+      themeIconLight.style.display = 'none';
+    }
+  }
+
+  // Load saved theme
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  setTheme(savedTheme);
+
+  themeToggleBtn.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+  });
+
+  // Mock data handling
+  const mockDefaults = {
+    batteryLevel: 85,
+    batteryCharging: false,
+    batteryTemp: 25,
+    wifiSignal: -45,
+    wifiSsid: 'EmulatorWiFi',
+    netConnected: true,
+    deviceModel: 'Emulator',
+    osVersion: '14',
+    brightness: 80
+  };
+
+  function loadMockData() {
+    const saved = localStorage.getItem('mockData');
+    const data = saved ? JSON.parse(saved) : mockDefaults;
+
+    document.getElementById('mockBatteryLevel').value = data.batteryLevel;
+    document.getElementById('mockBatteryCharging').checked = data.batteryCharging;
+    document.getElementById('mockBatteryTemp').value = data.batteryTemp;
+    document.getElementById('mockWifiSignal').value = data.wifiSignal;
+    document.getElementById('mockWifiSsid').value = data.wifiSsid;
+    document.getElementById('mockNetConnected').checked = data.netConnected;
+    document.getElementById('mockDeviceModel').value = data.deviceModel;
+    document.getElementById('mockOsVersion').value = data.osVersion;
+    document.getElementById('mockBrightness').value = data.brightness;
+
+    return data;
+  }
+
+  function getMockData() {
+    return {
+      batteryLevel: parseInt(document.getElementById('mockBatteryLevel').value) || 85,
+      batteryCharging: document.getElementById('mockBatteryCharging').checked,
+      batteryTemp: parseInt(document.getElementById('mockBatteryTemp').value) || 25,
+      wifiSignal: parseInt(document.getElementById('mockWifiSignal').value) || -45,
+      wifiSsid: document.getElementById('mockWifiSsid').value || 'EmulatorWiFi',
+      netConnected: document.getElementById('mockNetConnected').checked,
+      deviceModel: document.getElementById('mockDeviceModel').value || 'Emulator',
+      osVersion: document.getElementById('mockOsVersion').value || '14',
+      brightness: parseInt(document.getElementById('mockBrightness').value) || 80
+    };
+  }
+
+  // Load mock data on startup
+  loadMockData();
+
+  // Apply mock data button
+  document.getElementById('applyMockData').addEventListener('click', async () => {
+    const data = getMockData();
+    localStorage.setItem('mockData', JSON.stringify(data));
+
+    try {
+      const response = await fetch('/api/mock-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        addConsoleEntry('success', 'Mock data applied');
+      } else {
+        addConsoleEntry('error', 'Failed to apply mock data');
+      }
+    } catch (err) {
+      addConsoleEntry('error', 'Error applying mock data: ' + err.message);
+    }
+  });
+
+  // Reset mock data button
+  document.getElementById('resetMockData').addEventListener('click', () => {
+    localStorage.removeItem('mockData');
+    loadMockData();
+    addConsoleEntry('info', 'Mock data reset to defaults');
+  });
+
   // Editor controls
   document.getElementById('clearBtn').addEventListener('click', () => {
     if (confirm('Clear editor content?')) {

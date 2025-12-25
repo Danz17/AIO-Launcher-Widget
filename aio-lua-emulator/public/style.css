@@ -46,6 +46,38 @@
   --transition-normal: 0.2s ease;
 }
 
+/* Light Theme */
+[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #e8e8e8;
+  --bg-elevated: #ffffff;
+  --bg-hover: #e0e0e0;
+
+  --border-color: #d0d0d0;
+  --border-focus: #007acc;
+
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --text-bright: #1a1a1a;
+
+  --accent: #0e639c;
+  --accent-hover: #1177bb;
+  --accent-light: #007acc;
+
+  --success: #2e8b57;
+  --warning: #b8860b;
+  --error: #d32f2f;
+  --info: #1976d2;
+
+  --http-get: #1565c0;
+  --http-post: #7b1fa2;
+  --http-success: #2e7d32;
+  --http-error: #c62828;
+  --http-warning: #f57c00;
+}
+
 /* Reset */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -323,7 +355,27 @@ body {
 .panel-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+}
+
+.size-selector {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  outline: none;
+}
+
+.size-selector:hover {
+  border-color: var(--accent-color);
+}
+
+.size-selector:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .panel-body {
@@ -408,9 +460,11 @@ body {
   border-radius: 8px;
   padding: 16px;
   width: 100%;
+  max-width: var(--widget-width, 360px);
   min-height: 200px;
   max-height: 400px;
   overflow-y: auto;
+  transition: max-width 0.2s ease;
 }
 
 .widget-output {
@@ -1551,6 +1605,88 @@ body {
 
 .speed-stat.upload .speed-value {
   color: var(--http-post);
+}
+
+/* Mock Data Tab */
+.mock-data-editor {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.mock-section {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.mock-section h4 {
+  margin: 0 0 12px 0;
+  color: var(--text-bright);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  gap: 12px;
+}
+
+.mock-row label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.mock-row input[type="number"],
+.mock-row input[type="text"] {
+  width: 100px;
+  padding: 4px 8px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+
+.mock-row input[type="number"]:focus,
+.mock-row input[type="text"]:focus {
+  border-color: var(--accent-light);
+  outline: none;
+}
+
+.mock-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.mock-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+.btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 /* Utility Classes */

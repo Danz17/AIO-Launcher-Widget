@@ -52,6 +52,22 @@
           </svg>
           <span>Upload</span>
         </button>
+        <button class="btn btn-icon" id="themeToggleBtn" title="Toggle theme">
+          <svg class="theme-icon-dark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg class="theme-icon-light" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
         <button class="btn btn-icon" id="settingsBtn" title="Settings">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="3"/>
@@ -115,6 +131,11 @@
             <span>Widget Preview</span>
           </div>
           <div class="panel-actions">
+            <select id="widgetSize" class="size-selector" title="Widget preview size">
+              <option value="280">Small (280px)</option>
+              <option value="360" selected>Medium (360px)</option>
+              <option value="450">Large (450px)</option>
+            </select>
             <span class="badge" id="execStatus">Ready</span>
           </div>
         </div>
@@ -157,6 +178,17 @@
               </svg>
               <span>Long Click</span>
             </button>
+            <button class="btn btn-control btn-alarm" id="onAlarmBtn" title="Trigger on_alarm() callback">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="13" r="8"/>
+                <path d="M12 9v4l2 2"/>
+                <path d="M5 3L2 6"/>
+                <path d="M22 6l-3-3"/>
+                <path d="M6 19l-2 2"/>
+                <path d="M18 19l2 2"/>
+              </svg>
+              <span>Alarm</span>
+            </button>
           </div>
         </div>
       </section>
@@ -193,6 +225,15 @@
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
               </svg>
               Monitor
+            </button>
+            <button class="tab-btn" data-tab="mockdata">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <line x1="9" y1="9" x2="15" y2="9"/>
+                <line x1="9" y1="12" x2="15" y2="12"/>
+                <line x1="9" y1="15" x2="12" y2="15"/>
+              </svg>
+              Mock
             </button>
           </nav>
           <div class="panel-actions">
@@ -327,6 +368,61 @@
                   <button class="btn btn-xs" id="stopMonitor" disabled>Stop</button>
                   <button class="btn btn-xs" id="refreshMonitor">Refresh</button>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mock Data Tab -->
+          <div class="tab-content" id="mockdataTab">
+            <div class="mock-data-editor">
+              <div class="mock-section">
+                <h4>Battery</h4>
+                <div class="mock-row">
+                  <label>Level (%)</label>
+                  <input type="number" id="mockBatteryLevel" value="85" min="0" max="100">
+                </div>
+                <div class="mock-row">
+                  <label>Charging</label>
+                  <input type="checkbox" id="mockBatteryCharging">
+                </div>
+                <div class="mock-row">
+                  <label>Temperature (C)</label>
+                  <input type="number" id="mockBatteryTemp" value="25" min="0" max="50">
+                </div>
+              </div>
+              <div class="mock-section">
+                <h4>Network</h4>
+                <div class="mock-row">
+                  <label>WiFi Signal (dBm)</label>
+                  <input type="number" id="mockWifiSignal" value="-45" min="-100" max="0">
+                </div>
+                <div class="mock-row">
+                  <label>SSID</label>
+                  <input type="text" id="mockWifiSsid" value="EmulatorWiFi">
+                </div>
+                <div class="mock-row">
+                  <label>Connected</label>
+                  <input type="checkbox" id="mockNetConnected" checked>
+                </div>
+              </div>
+              <div class="mock-section">
+                <h4>Device</h4>
+                <div class="mock-row">
+                  <label>Model</label>
+                  <input type="text" id="mockDeviceModel" value="Emulator">
+                </div>
+                <div class="mock-row">
+                  <label>OS Version</label>
+                  <input type="text" id="mockOsVersion" value="14">
+                </div>
+                <div class="mock-row">
+                  <label>Brightness (%)</label>
+                  <input type="number" id="mockBrightness" value="80" min="0" max="100">
+                </div>
+              </div>
+              <div class="mock-actions">
+                <button class="btn btn-primary" id="applyMockData">Apply Changes</button>
+                <button class="btn btn-secondary" id="resetMockData">Reset Defaults</button>
               </div>
             </div>
           </div>
