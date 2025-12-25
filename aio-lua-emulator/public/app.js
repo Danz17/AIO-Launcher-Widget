@@ -1816,6 +1816,118 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================================================
+// AI Widget Generator
+// ============================================================================
+
+let lastGeneratedCode = '';
+
+async function generateWidget() {
+  const description = document.getElementById('widgetDescription').value.trim();
+  if (!description) {
+    showToast('Please enter a widget description', 'error');
+    return;
+  }
+
+  // Get API key from settings
+  const apiKey = document.getElementById('settingGroqKey').value.trim();
+  if (!apiKey) {
+    showToast('Please set your Groq API key in Settings', 'error');
+    document.getElementById('settingsModal').classList.add('active');
+    return;
+  }
+
+  // Show loading
+  document.getElementById('generatorLoading').style.display = 'flex';
+  document.getElementById('generatorResult').style.display = 'none';
+  document.getElementById('generateWidgetBtn').disabled = true;
+
+  try {
+    const response = await fetch('/api/generate-widget', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description, apiKey })
+    });
+
+    const data = await response.json();
+
+    if (data.success && data.code) {
+      lastGeneratedCode = data.code;
+      document.getElementById('generatedCodePreview').textContent = data.code;
+      document.getElementById('generatorResult').style.display = 'block';
+      showToast('Widget generated successfully!', 'success');
+      addConsoleEntry('success', `Generated widget from description: "${description.substring(0, 50)}..."`);
+    } else {
+      showToast(data.error || 'Failed to generate widget', 'error');
+      addConsoleEntry('error', `Generator error: ${data.error}`);
+    }
+  } catch (error) {
+    showToast('Error connecting to server', 'error');
+    addConsoleEntry('error', `Generator connection error: ${error.message}`);
+  } finally {
+    document.getElementById('generatorLoading').style.display = 'none';
+    document.getElementById('generateWidgetBtn').disabled = false;
+  }
+}
+
+function copyGeneratedCode() {
+  if (!lastGeneratedCode) return;
+  navigator.clipboard.writeText(lastGeneratedCode)
+    .then(() => showToast('Code copied to clipboard', 'success'))
+    .catch(() => showToast('Failed to copy', 'error'));
+}
+
+function loadGeneratedCode() {
+  if (!lastGeneratedCode || !editor) return;
+  editor.setValue(lastGeneratedCode);
+  showToast('Widget loaded in editor', 'success');
+  addConsoleEntry('info', 'Loaded AI-generated widget in editor');
+
+  // Switch to editor tab if on mobile or collapsed
+  const editorPanel = document.getElementById('editorPanel');
+  if (editorPanel && editorPanel.classList.contains('collapsed')) {
+    editorPanel.classList.remove('collapsed');
+  }
+
+  // Auto-run if enabled
+  if (autoResumeEnabled) {
+    setTimeout(() => executeScript('on_resume'), 500);
+  }
+}
+
+// Setup generator events
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    // Generate button
+    const generateBtn = document.getElementById('generateWidgetBtn');
+    if (generateBtn) {
+      generateBtn.addEventListener('click', generateWidget);
+    }
+
+    // Copy generated code
+    const copyGenBtn = document.getElementById('copyGeneratedCode');
+    if (copyGenBtn) {
+      copyGenBtn.addEventListener('click', copyGeneratedCode);
+    }
+
+    // Load generated code in editor
+    const loadGenBtn = document.getElementById('loadGeneratedCode');
+    if (loadGenBtn) {
+      loadGenBtn.addEventListener('click', loadGeneratedCode);
+    }
+
+    // Example buttons
+    document.querySelectorAll('.example-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const example = btn.dataset.example;
+        if (example) {
+          document.getElementById('widgetDescription').value = example;
+        }
+      });
+    });
+  }, 100);
+});
+
+// ============================================================================
 // Initialization Complete
 // ============================================================================
 

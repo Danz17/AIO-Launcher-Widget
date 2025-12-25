@@ -235,6 +235,12 @@
               </svg>
               Mock
             </button>
+            <button class="tab-btn generator-tab" data-tab="generator">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              AI Gen
+            </button>
           </nav>
           <div class="panel-actions">
             <button class="btn btn-xs" id="clearLogBtn" title="Clear logs">Clear</button>
@@ -423,6 +429,65 @@
               <div class="mock-actions">
                 <button class="btn btn-primary" id="applyMockData">Apply Changes</button>
                 <button class="btn btn-secondary" id="resetMockData">Reset Defaults</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generator Tab -->
+          <div class="tab-content" id="generatorTab">
+            <div class="generator-container">
+              <div class="generator-header">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                <h3>AI Widget Generator</h3>
+                <p>Describe your widget and let AI create it for you</p>
+              </div>
+              <div class="generator-form">
+                <label class="generator-label">Widget Description</label>
+                <textarea id="widgetDescription" class="generator-textarea" placeholder="Example: A weather widget that shows current temperature, humidity, and a 5-day forecast with icons. Should update every hour and cache data." rows="4"></textarea>
+                <div class="generator-examples">
+                  <span>Quick examples:</span>
+                  <button class="btn btn-xs example-btn" data-example="A todo list widget with add/remove tasks, storage persistence, and completion checkmarks">Todo List</button>
+                  <button class="btn btn-xs example-btn" data-example="A countdown timer widget to a specific date with days, hours, minutes remaining">Countdown</button>
+                  <button class="btn btn-xs example-btn" data-example="A quotes widget that fetches random inspirational quotes from an API and displays with author">Quotes</button>
+                  <button class="btn btn-xs example-btn" data-example="A system monitor showing battery, wifi signal, storage usage with visual bars and charts">System Monitor</button>
+                </div>
+                <div class="generator-actions">
+                  <button class="btn btn-primary btn-lg" id="generateWidgetBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    Generate Widget
+                  </button>
+                </div>
+              </div>
+              <div class="generator-result" id="generatorResult" style="display: none;">
+                <div class="generator-result-header">
+                  <span>Generated Widget</span>
+                  <div class="generator-result-actions">
+                    <button class="btn btn-xs" id="copyGeneratedCode">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                      </svg>
+                      Copy
+                    </button>
+                    <button class="btn btn-xs btn-primary" id="loadGeneratedCode">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="16 18 22 12 16 6"/>
+                        <polyline points="8 6 2 12 8 18"/>
+                      </svg>
+                      Load in Editor
+                    </button>
+                  </div>
+                </div>
+                <pre id="generatedCodePreview" class="generated-code-preview"></pre>
+              </div>
+              <div class="generator-loading" id="generatorLoading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Generating your widget with AI...</p>
+                <small>This may take a few seconds</small>
               </div>
             </div>
           </div>

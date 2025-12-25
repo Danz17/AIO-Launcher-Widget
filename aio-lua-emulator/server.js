@@ -1084,6 +1084,153 @@ List actual problems (not theoretical improvements):
     }
 });
 
+// ============================================================================
+// AI Widget Generator
+// ============================================================================
+
+app.post('/api/generate-widget', async (req, res) => {
+    try {
+        const { description, apiKey } = req.body;
+
+        if (!description) {
+            return res.status(400).json({ error: 'No description provided' });
+        }
+
+        if (!apiKey) {
+            return res.status(400).json({ error: 'No API key provided' });
+        }
+
+        const systemPrompt = `You are an expert AIO Launcher Lua widget developer.
+
+${AIO_API_REFERENCE}
+
+YOUR TASK: Generate a complete, working AIO Launcher widget based on the user's description.
+
+WIDGET STRUCTURE TEMPLATE:
+\`\`\`lua
+-- [Widget Name] for AIO Launcher
+-- [Brief description]
+-- Uses: [list main APIs used]
+
+-- Configuration
+local CONFIG = {
+    -- user-configurable settings
+}
+
+-- State variables
+local state = {}
+
+-- Helper functions
+local function helper_example()
+    -- reusable logic
+end
+
+-- Main display function
+local function show_widget()
+    -- ui:show_text() or ui:show_lines() or other display
+end
+
+-- Data fetching (if needed)
+local function fetch_data()
+    http:get(url, function(body, code)
+        if code == 200 and body then
+            local data = json.decode(body)
+            -- process data
+            show_widget()
+        else
+            ui:show_text("❌ Error fetching data")
+        end
+    end)
+end
+
+-- Callbacks
+function on_resume()
+    -- called when widget loads
+    show_widget()
+end
+
+function on_click()
+    -- called on tap
+end
+
+function on_long_click()
+    ui:show_context_menu({"🔄 Refresh", "⚙️ Settings"})
+end
+
+function on_context_menu_click(index)
+    if index == 1 then
+        -- refresh
+    elseif index == 2 then
+        -- settings
+    end
+end
+\`\`\`
+
+IMPORTANT RULES:
+1. ONLY use APIs from the reference above - NEVER invent new ones
+2. Use json.decode() NOT json:decode() (dot, not colon)
+3. Always handle nil/error cases
+4. Use emojis for visual appeal
+5. Include storage for persistence when appropriate
+6. Add ui:show_chart() for data visualization when applicable
+7. Keep configuration at the top for easy customization
+8. Add helpful comments
+9. Make it production-ready and complete
+
+OUTPUT FORMAT:
+Respond ONLY with the complete Lua code wrapped in \`\`\`lua ... \`\`\` tags.
+Do not include explanations outside the code block.`;
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: `Create an AIO Launcher widget for: ${description}` }
+                ],
+                temperature: 0.5,
+                max_tokens: 4000
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Groq API error:', errorData);
+            return res.status(response.status).json({
+                error: errorData.error?.message || `API error: ${response.status}`
+            });
+        }
+
+        const data = await response.json();
+        const generatedContent = data.choices?.[0]?.message?.content || '';
+
+        // Extract Lua code from markdown code blocks
+        const luaMatch = generatedContent.match(/```lua\n([\s\S]*?)```/);
+        const widgetCode = luaMatch ? luaMatch[1].trim() : generatedContent;
+
+        // Log the generation
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const logFile = join(logsDir, `generator-${timestamp}.json`);
+        writeFileSync(logFile, JSON.stringify({
+            timestamp: new Date().toISOString(),
+            description,
+            generatedCode: widgetCode
+        }, null, 2), 'utf8');
+        console.log(`📝 Generator log saved: ${logFile}`);
+
+        res.json({ success: true, code: widgetCode });
+
+    } catch (error) {
+        console.error('Generator error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 Visual Emulator running at http://localhost:${PORT}`);
     console.log(`📱 Open your browser and navigate to the URL above`);
