@@ -1454,6 +1454,245 @@ function setupMobileNav() {
 }
 
 // ============================================================================
+// AI Script Inspector
+// ============================================================================
+
+let lastInspectorResult = null;
+let extractedImprovedScript = null;
+
+function openInspectorModal() {
+  document.getElementById('inspectorModal').classList.add('show');
+}
+
+function closeInspectorModal() {
+  document.getElementById('inspectorModal').classList.remove('show');
+}
+
+function resetInspectorUI() {
+  document.getElementById('inspectorLoading').style.display = 'none';
+  document.getElementById('inspectorResult').innerHTML = `
+    <div class="inspector-welcome">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+      <h3>AI-Powered Script Analysis</h3>
+      <p>Click "Analyze Script" to get intelligent feedback on your AIO Launcher widget code.</p>
+      <ul>
+        <li>API usage validation</li>
+        <li>Best practice suggestions</li>
+        <li>Error detection with fixes</li>
+        <li>Performance improvements</li>
+        <li>Improved code generation</li>
+      </ul>
+    </div>
+  `;
+  document.getElementById('copyInspectorResult').disabled = true;
+  document.getElementById('applyInspectorFix').disabled = true;
+  lastInspectorResult = null;
+  extractedImprovedScript = null;
+}
+
+async function analyzeScript() {
+  if (!editor) {
+    showToast('Editor not ready', 'error');
+    return;
+  }
+
+  const script = editor.getValue().trim();
+  if (!script) {
+    showToast('No script to analyze', 'warning');
+    return;
+  }
+
+  const settings = getSettings();
+  const apiKey = settings.groq?.apiKey;
+
+  if (!apiKey) {
+    showToast('Please add your Groq API key in Settings', 'warning');
+    closeInspectorModal();
+    openSettingsModal();
+    return;
+  }
+
+  // Show loading
+  document.getElementById('inspectorLoading').style.display = 'flex';
+  document.getElementById('inspectorResult').innerHTML = '';
+  document.getElementById('analyzeScriptBtn').disabled = true;
+
+  try {
+    const response = await fetch('/api/inspector/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ script, apiKey })
+    });
+
+    const result = await response.json();
+
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    // Store result and render
+    lastInspectorResult = result.analysis;
+    renderInspectorResult(result.analysis);
+
+    // Enable buttons
+    document.getElementById('copyInspectorResult').disabled = false;
+
+    // Check if there's an improved script to apply
+    extractedImprovedScript = extractImprovedScript(result.analysis);
+    if (extractedImprovedScript) {
+      document.getElementById('applyInspectorFix').disabled = false;
+    }
+
+    addConsoleEntry('success', 'Script analysis complete');
+
+  } catch (error) {
+    console.error('Inspector error:', error);
+    document.getElementById('inspectorResult').innerHTML = `
+      <div class="inspector-error">
+        <strong>Analysis Failed</strong>
+        <p>${escapeHtml(error.message)}</p>
+        <p>Make sure your Groq API key is valid and you have API credits.</p>
+      </div>
+    `;
+    addConsoleEntry('error', `Inspector: ${error.message}`);
+  } finally {
+    document.getElementById('inspectorLoading').style.display = 'none';
+    document.getElementById('analyzeScriptBtn').disabled = false;
+  }
+}
+
+function renderInspectorResult(markdown) {
+  // Simple markdown to HTML conversion
+  let html = markdown
+    // Headers
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    // Bold
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // Italic
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // Code blocks
+    .replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => {
+      return `<pre><code class="language-${lang}">${escapeHtml(code.trim())}</code></pre>`;
+    })
+    // Lists
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
+    // Checkmarks
+    .replace(/^- \[x\] (.+)$/gm, '<li class="checked">$1</li>')
+    .replace(/^- \[ \] (.+)$/gm, '<li class="unchecked">$1</li>')
+    // Line breaks
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+
+  // Wrap in paragraph
+  html = `<p>${html}</p>`;
+
+  // Clean up empty paragraphs and fix list structure
+  html = html
+    .replace(/<p><\/p>/g, '')
+    .replace(/<p>(<h[1-3]>)/g, '$1')
+    .replace(/(<\/h[1-3]>)<\/p>/g, '$1')
+    .replace(/<p>(<pre>)/g, '$1')
+    .replace(/(<\/pre>)<\/p>/g, '$1')
+    .replace(/<p>(<li>)/g, '<ul>$1')
+    .replace(/(<\/li>)<\/p>/g, '$1</ul>')
+    .replace(/<\/li><br><li>/g, '</li><li>');
+
+  document.getElementById('inspectorResult').innerHTML = html;
+}
+
+function extractImprovedScript(markdown) {
+  // Find Lua code block that appears after "Improved Script" heading
+  const improvedMatch = markdown.match(/###\s*Improved Script[\s\S]*?```lua\n([\s\S]*?)```/i);
+  if (improvedMatch && improvedMatch[1]) {
+    return improvedMatch[1].trim();
+  }
+
+  // Fallback: find any lua code block
+  const luaMatch = markdown.match(/```lua\n([\s\S]*?)```/);
+  if (luaMatch && luaMatch[1] && luaMatch[1].includes('function')) {
+    return luaMatch[1].trim();
+  }
+
+  return null;
+}
+
+function copyInspectorResult() {
+  if (!lastInspectorResult) return;
+
+  navigator.clipboard.writeText(lastInspectorResult)
+    .then(() => showToast('Result copied to clipboard', 'success'))
+    .catch(() => showToast('Failed to copy', 'error'));
+}
+
+function applyInspectorFix() {
+  if (!extractedImprovedScript || !editor) return;
+
+  if (confirm('Replace current script with the AI-improved version?')) {
+    editor.setValue(extractedImprovedScript);
+    showToast('Improved script applied', 'success');
+    addConsoleEntry('success', 'Applied AI-improved script');
+    closeInspectorModal();
+
+    // Auto-run the improved script
+    if (autoResumeEnabled) {
+      setTimeout(() => executeScript('on_resume'), 500);
+    }
+  }
+}
+
+// Setup inspector events
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    // Inspector button
+    const inspectBtn = document.getElementById('inspectBtn');
+    if (inspectBtn) {
+      inspectBtn.addEventListener('click', openInspectorModal);
+    }
+
+    // Close inspector
+    const closeInspector = document.getElementById('closeInspector');
+    if (closeInspector) {
+      closeInspector.addEventListener('click', closeInspectorModal);
+    }
+
+    // Analyze button
+    const analyzeBtn = document.getElementById('analyzeScriptBtn');
+    if (analyzeBtn) {
+      analyzeBtn.addEventListener('click', analyzeScript);
+    }
+
+    // Copy result
+    const copyBtn = document.getElementById('copyInspectorResult');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', copyInspectorResult);
+    }
+
+    // Apply fix
+    const applyBtn = document.getElementById('applyInspectorFix');
+    if (applyBtn) {
+      applyBtn.addEventListener('click', applyInspectorFix);
+    }
+
+    // Close on overlay click
+    const inspectorModal = document.getElementById('inspectorModal');
+    if (inspectorModal) {
+      inspectorModal.addEventListener('click', (e) => {
+        if (e.target.id === 'inspectorModal') {
+          closeInspectorModal();
+        }
+      });
+    }
+  }, 100);
+});
+
+// ============================================================================
 // Initialization Complete
 // ============================================================================
 

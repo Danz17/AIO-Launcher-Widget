@@ -702,6 +702,147 @@ app.get('/api/mikrotik/traffic', async (req, res) => {
     }
 });
 
+// ============================================================================
+// AI Script Inspector
+// ============================================================================
+
+const AIO_API_REFERENCE = `
+AIO Launcher Widget API Reference:
+
+UI Functions (ui:):
+- ui:show_text(text) - Display simple text
+- ui:show_lines(lines_table) - Display multiple lines
+- ui:show_table(headers, rows) - Display data table
+- ui:show_buttons(buttons_table) - Display button row
+- ui:show_progress(value, max, text) - Show progress bar
+- ui:show_chart(data, options) - Show chart/graph
+- ui:show_context_menu(items, callback) - Context menu popup
+- ui:set_title(title) - Set widget title
+
+HTTP Functions (http:):
+- http:get(url, callback) - GET request with callback(response, status)
+- http:get(url, headers, callback) - GET with custom headers
+- http:post(url, body, callback) - POST request
+- http:post(url, body, headers, callback) - POST with headers
+- Headers passed as Lua table: {["Authorization"] = "Bearer xxx"}
+
+JSON Functions (json:):
+- json.decode(json_string) - Parse JSON to Lua table
+- json.encode(lua_table) - Convert Lua table to JSON
+
+Storage Functions (storage:):
+- storage:get(key) - Get stored value
+- storage:put(key, value) - Store value
+- storage:delete(key) - Remove value
+
+System Functions (system:):
+- system:toast(message) - Show toast notification
+- system:open_browser(url) - Open URL in browser
+- system:vibrate() - Vibrate device
+- system:copy_to_clipboard(text) - Copy to clipboard
+
+Widget Callbacks:
+- function on_resume() - Called when widget becomes visible
+- function on_click() - Called on tap
+- function on_long_click() - Called on long press
+- function on_network_result(result) - Called after HTTP completes
+
+Common Patterns:
+1. Always check for nil before using HTTP response
+2. Use pcall for error handling in callbacks
+3. Store API credentials in storage, not in code
+4. Base64 encode auth headers: require("base64").encode(user..":"..pass)
+`;
+
+app.post('/api/inspector/analyze', async (req, res) => {
+    try {
+        const { script, apiKey } = req.body;
+
+        if (!script) {
+            return res.status(400).json({ error: 'No script provided' });
+        }
+
+        if (!apiKey) {
+            return res.status(400).json({ error: 'No API key provided' });
+        }
+
+        const systemPrompt = `You are an expert AIO Launcher Lua widget script analyzer. Your role is to review scripts and provide helpful, actionable feedback.
+
+${AIO_API_REFERENCE}
+
+ANALYSIS FORMAT - Use this exact structure:
+
+### Script Purpose
+Brief 1-2 sentence description of what this widget does.
+
+### API Usage Check
+List correct and incorrect API calls with line references:
+- Correct: list what's used correctly
+- Errors: list any API misuse with line numbers
+
+### Best Practices
+- Error handling issues
+- Missing nil checks
+- Security concerns (hardcoded credentials)
+- Performance issues
+
+### Suggestions
+1. [Priority] Most important fix
+2. [Recommended] Other improvements
+3. [Optional] Nice-to-have enhancements
+
+### Improved Script
+\`\`\`lua
+-- Improved version with all fixes applied
+-- Add comments explaining changes
+-- Keep original functionality intact
+\`\`\`
+
+RULES:
+- Be concise but thorough
+- Focus on practical, actionable fixes
+- Preserve the script's original purpose
+- Add helpful comments in improved code
+- Follow Lua 5.3 conventions
+- Credit: "-- Enhanced by AIO Widget Emulator by Phenix"`;
+
+        // Use Groq API (free tier with fast inference)
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'llama-3.3-70b-versatile',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: `Analyze this AIO Launcher widget script:\n\n\`\`\`lua\n${script}\n\`\`\`` }
+                ],
+                temperature: 0.3,
+                max_tokens: 4000
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Groq API error:', errorData);
+            return res.status(response.status).json({
+                error: errorData.error?.message || `API error: ${response.status}`
+            });
+        }
+
+        const data = await response.json();
+        const analysis = data.choices?.[0]?.message?.content || 'No analysis generated';
+
+        res.json({ success: true, analysis });
+
+    } catch (error) {
+        console.error('Inspector error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 Visual Emulator running at http://localhost:${PORT}`);
     console.log(`📱 Open your browser and navigate to the URL above`);
