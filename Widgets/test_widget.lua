@@ -1,50 +1,41 @@
--- name = "API Test"
--- description = "Test widget to verify AIO API"
+-- name = "Hello World"
+-- description = "Simple test widget for AIO Launcher Emulator"
+-- author = "Phenix"
 -- type = "widget"
+-- data_source = "script"
 
-local debug_info = ""
+-- ============================================================================
+-- Simple Hello World Widget
+-- Demonstrates basic AIO Launcher APIs
+-- ============================================================================
+
+local counter = 0
 
 function on_resume()
-    debug_info = ""
-    ui:show_text("API Test Widget\n\nTap to test HTTP\nLong press for menu")
+  ui:show_text("👋 Hello World!\n\nTap to count\nLong press for menu")
 end
 
 function on_click()
-    debug_info = "Request sent: " .. os.date("%H:%M:%S") .. "\n"
-    ui:show_text("Loading...\n\n" .. debug_info)
-    http:get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT")
-end
-
-function on_network_result(body, code)
-    debug_info = debug_info .. "Response: " .. os.date("%H:%M:%S") .. "\n"
-    debug_info = debug_info .. "Code: " .. tostring(code) .. "\n"
-    debug_info = debug_info .. "Body length: " .. tostring(body and #body or 0) .. "\n"
-
-    if code == 200 and body then
-        local ok, data = pcall(function() return json:decode(body) end)
-        if ok and data then
-            ui:show_text("SUCCESS!\n\nBTC: $" .. (data.price or "?") .. "\n\n" .. debug_info)
-        else
-            ui:show_text("JSON Error\n\n" .. debug_info .. "\nBody: " .. tostring(body):sub(1, 100))
-        end
-    else
-        ui:show_text("HTTP Error\n\n" .. debug_info .. "\nBody: " .. tostring(body):sub(1, 100))
-    end
-end
-
-function on_network_error(err)
-    debug_info = debug_info .. "Error: " .. os.date("%H:%M:%S") .. "\n"
-    ui:show_text("Network Error\n\n" .. debug_info .. "\nError: " .. tostring(err))
+  counter = counter + 1
+  ui:show_text("👋 Hello World!\n\n🔢 Count: " .. counter .. "\n\nTap to increment")
 end
 
 function on_long_click()
-    ui:show_context_menu({
-        { "refresh", "Refresh" },
-        { "info", "Info" },
-        { "close", "Close" }
-    })
+  ui:show_context_menu({
+    { "🔄 Reset Counter", "reset" },
+    { "📋 Copy Count", "copy" },
+    { "🌐 Open GitHub", "github" }
+  }, "on_menu")
 end
 
-function on_context_menu_click(idx)
-    ui:show_toast("Selected: " .. tostring(idx))
+function on_menu(idx)
+  if idx == 1 then
+    counter = 0
+    ui:show_text("👋 Hello World!\n\n🔢 Counter reset!")
+  elseif idx == 2 then
+    system:copy_to_clipboard(tostring(counter))
+    system:toast("Copied: " .. counter)
+  elseif idx == 3 then
+    system:open_browser("https://github.com/Danz17/AIO-Launcher-Widget")
+  end
 end

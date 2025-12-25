@@ -1,38 +1,58 @@
-# MikroTik Router Widgets
+# MikroTik Router Widget
 
-Lua widgets for monitoring MikroTik routers via the REST API.
+Comprehensive Lua widget for monitoring MikroTik routers via the REST API.
 
-## Versions
+## File
 
-| File | Features | Lines | Recommended |
-|------|----------|-------|-------------|
-| `mikrotik_full.lua` | Full monitoring, graphs, LTE, hotspot, DHCP, remote control | 609 | **Yes** |
-| `mikrotik_simple.lua` | Basic CPU/RAM/uptime only | 53 | For simple needs |
-| `mikrotik_widget_v10.lua` | Basic with Base64 auth | 61 | Legacy |
-| `mikrotik_v12.lua` | Debug version with auth testing | 71 | Development |
-| `mikrotik_widget_v6.lua` | Advanced features, URL auth | 334 | Superseded by full |
+**`mikrotik.lua`** - Single comprehensive widget with all features
 
-## Recommended: `mikrotik_full.lua`
+## Features
 
-Features:
-- CPU/RAM usage with history graphs
-- LTE signal strength and operator info
-- Hotspot active clients
-- DHCP lease monitoring
-- Daily/monthly data usage tracking
-- Remote control (reboot, enable/disable interfaces)
-- Compact and full display modes
+- **System Monitoring**
+  - CPU usage with progress bar
+  - RAM usage with progress bar
+  - Uptime display
+  - RouterOS version and board name
+
+- **LTE Monitoring** (if available)
+  - Signal strength with visual bars
+  - Operator name
+  - Band information
+
+- **Hotspot Clients**
+  - Active user count
+  - Top users by data usage
+  - Configurable max display
+
+- **Remote Control** (via long-press menu)
+  - Toggle LTE on/off
+  - Toggle Hotspot on/off
+  - Reboot router
+  - Open WebFig interface
+
+- **Display Modes**
+  - Full mode: detailed information
+  - Compact mode: single line overview
 
 ## Configuration
 
-Edit the CONFIG table at the top of each file:
+Edit the CONFIG table at the top of the file:
 
 ```lua
 local CONFIG = {
-    ip = "10.1.1.1",
-    username = "admin",
-    password = "your_password",
-    -- ... other options
+  ip = "10.1.1.1",
+  user = "admin",
+  pass = "admin123",
+
+  -- Display options
+  show_lte = true,
+  show_clients = true,
+  max_clients = 5,
+  compact_mode = false,
+
+  -- Data limits (GB)
+  daily_limit = 10,
+  monthly_limit = 100
 }
 ```
 
@@ -40,7 +60,17 @@ local CONFIG = {
 
 Ensure the REST API is enabled on your MikroTik router:
 
+```routeros
+/ip service set www disabled=no
 ```
-/ip service set www-ssl disabled=no
-/ip service set api-ssl disabled=no
-```
+
+The widget uses URL-embedded authentication (`http://user:pass@ip/rest/...`) which works with the standard HTTP service.
+
+## Usage
+
+1. Copy `mikrotik.lua` to your AIO Launcher scripts folder
+2. Edit the CONFIG section with your router credentials
+3. Add the widget to your launcher
+
+**Tap** - Open WebFig in browser (or retry if error)
+**Long press** - Open control menu
