@@ -1928,6 +1928,918 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================================================
+// TEMPLATES & SNIPPETS SYSTEM
+// ============================================================================
+
+const WIDGET_TEMPLATES = {
+  'basic': `-- Basic Widget Template
+-- A simple widget with standard callbacks
+
+local WIDGET_NAME = "My Widget"
+
+-- State
+local data = {}
+
+-- Helper functions
+local function render()
+  local lines = {
+    "📦 " .. WIDGET_NAME,
+    "",
+    "Hello from your widget!",
+    "",
+    "━━━━━━━━━━━━━━━━━━━━",
+    "Tap to interact"
+  }
+  ui:show_text(table.concat(lines, "\\n"))
+end
+
+-- Callbacks
+function on_resume()
+  render()
+end
+
+function on_click()
+  system:toast("Widget clicked!")
+  render()
+end
+
+function on_long_click()
+  ui:show_context_menu({
+    "Option 1",
+    "Option 2",
+    "Option 3"
+  })
+end
+
+function on_context_menu_click(index)
+  system:toast("Selected option " .. index)
+end
+`,
+
+  'http-api': `-- HTTP API Widget Template
+-- Fetch and display data from REST APIs
+
+local API_URL = "https://api.example.com/data"
+local REFRESH_MINUTES = 5
+
+-- State
+local state = {
+  loading = false,
+  error = nil,
+  data = nil,
+  last_refresh = 0
+}
+
+-- Helper functions
+local function safe_decode(data)
+  if not data or data == "" then return nil end
+  local ok, result = pcall(json.decode, data)
+  if ok then return result end
+  return nil
+end
+
+local function render()
+  if state.loading then
+    ui:show_text("⏳ Loading...")
+    return
+  end
+
+  if state.error then
+    ui:show_text("❌ " .. state.error .. "\\n\\nTap to retry")
+    return
+  end
+
+  local lines = {
+    "🌐 API Widget",
+    "",
+    "Data: " .. tostring(state.data),
+    "",
+    "━━━━━━━━━━━━━━━━━━━━",
+    "Last updated: " .. os.date("%H:%M")
+  }
+  ui:show_text(table.concat(lines, "\\n"))
+end
+
+local function fetch_data()
+  state.loading = true
+  state.error = nil
+  render()
+
+  http:get(API_URL, function(body, code)
+    state.loading = false
+
+    if code == 200 and body then
+      local data = safe_decode(body)
+      if data then
+        state.data = data
+        state.last_refresh = os.time()
+      else
+        state.error = "Failed to parse response"
+      end
+    else
+      state.error = "Request failed (code: " .. tostring(code) .. ")"
+    end
+
+    render()
+  end)
+end
+
+-- Callbacks
+function on_resume()
+  local elapsed = os.time() - state.last_refresh
+  if elapsed > REFRESH_MINUTES * 60 or not state.data then
+    fetch_data()
+  else
+    render()
+  end
+end
+
+function on_click()
+  if state.error then
+    fetch_data()
+  else
+    system:toast("Data refreshed!")
+    fetch_data()
+  end
+end
+
+function on_long_click()
+  ui:show_context_menu({
+    "🔄 Refresh",
+    "⚙️ Settings"
+  })
+end
+
+function on_context_menu_click(index)
+  if index == 1 then
+    fetch_data()
+  elseif index == 2 then
+    ui:show_text("⚙️ Settings\\n\\nAPI URL: " .. API_URL)
+  end
+end
+`,
+
+  'chart': `-- Chart Widget Template
+-- Display data with visual charts
+
+local STORAGE_KEY = "chart_data"
+local MAX_POINTS = 20
+
+-- State
+local values = {}
+
+-- Helper functions
+local function load_data()
+  local data = storage:get(STORAGE_KEY)
+  if data then
+    local decoded = json.decode(data)
+    if decoded then
+      return decoded
+    end
+  end
+  return {}
+end
+
+local function save_data()
+  storage:put(STORAGE_KEY, json.encode(values))
+end
+
+local function get_average()
+  if #values == 0 then return 0 end
+  local sum = 0
+  for _, v in ipairs(values) do
+    sum = sum + v
+  end
+  return sum / #values
+end
+
+local function render()
+  local avg = get_average()
+  local latest = values[#values] or 0
+
+  local lines = {
+    "📊 Chart Widget",
+    "",
+    "📈 Latest: " .. latest,
+    "📉 Average: " .. string.format("%.1f", avg),
+    "📋 Points: " .. #values,
+    "",
+    "━━━━━━━━━━━━━━━━━━━━",
+    "Tap to add random value"
+  }
+  ui:show_text(table.concat(lines, "\\n"))
+
+  -- Show chart if we have data
+  if #values >= 2 then
+    ui:show_chart(values, nil, "Data Points", true)
+  end
+end
+
+local function add_value(val)
+  table.insert(values, val)
+  while #values > MAX_POINTS do
+    table.remove(values, 1)
+  end
+  save_data()
+  render()
+end
+
+-- Callbacks
+function on_resume()
+  values = load_data()
+  render()
+end
+
+function on_click()
+  local new_val = math.random(1, 100)
+  add_value(new_val)
+  system:toast("Added: " .. new_val)
+end
+
+function on_long_click()
+  ui:show_context_menu({
+    "➕ Add Value",
+    "🗑️ Clear Data",
+    "📊 Show Stats"
+  })
+end
+
+function on_context_menu_click(index)
+  if index == 1 then
+    add_value(math.random(1, 100))
+  elseif index == 2 then
+    values = {}
+    save_data()
+    system:toast("Data cleared")
+    render()
+  elseif index == 3 then
+    local stats = "📊 Statistics\\n\\n"
+    stats = stats .. "Points: " .. #values .. "\\n"
+    stats = stats .. "Average: " .. string.format("%.1f", get_average()) .. "\\n"
+    if #values > 0 then
+      stats = stats .. "Min: " .. math.min(table.unpack(values)) .. "\\n"
+      stats = stats .. "Max: " .. math.max(table.unpack(values))
+    end
+    ui:show_text(stats)
+  end
+end
+`,
+
+  'storage': `-- Storage Widget Template
+-- Persistent data with JSON storage
+
+local STORAGE_KEY = "my_widget_data"
+
+-- State
+local state = {
+  items = {},
+  count = 0
+}
+
+-- Helper functions
+local function load_data()
+  local data = storage:get(STORAGE_KEY)
+  if data then
+    local decoded = json.decode(data)
+    if decoded then
+      return decoded
+    end
+  end
+  return { items = {}, count = 0 }
+end
+
+local function save_data()
+  storage:put(STORAGE_KEY, json.encode(state))
+end
+
+local function render()
+  local lines = {
+    "💾 Storage Widget",
+    "",
+    "📦 Items: " .. #state.items,
+    "🔢 Counter: " .. state.count,
+    ""
+  }
+
+  if #state.items > 0 then
+    table.insert(lines, "━━━━━━━━━━━━━━━━━━━━")
+    for i, item in ipairs(state.items) do
+      table.insert(lines, i .. ". " .. item)
+    end
+  end
+
+  table.insert(lines, "")
+  table.insert(lines, "Tap: +1 | Long: Menu")
+
+  ui:show_text(table.concat(lines, "\\n"))
+end
+
+-- Callbacks
+function on_resume()
+  state = load_data()
+  render()
+end
+
+function on_click()
+  state.count = state.count + 1
+  save_data()
+  system:toast("Count: " .. state.count)
+  render()
+end
+
+function on_long_click()
+  ui:show_context_menu({
+    "➕ Add Item",
+    "➖ Remove Last",
+    "🔄 Reset Counter",
+    "🗑️ Clear All"
+  })
+end
+
+function on_context_menu_click(index)
+  if index == 1 then
+    table.insert(state.items, "Item " .. (#state.items + 1))
+    save_data()
+    system:toast("Item added")
+  elseif index == 2 then
+    if #state.items > 0 then
+      table.remove(state.items)
+      save_data()
+      system:toast("Item removed")
+    end
+  elseif index == 3 then
+    state.count = 0
+    save_data()
+    system:toast("Counter reset")
+  elseif index == 4 then
+    state = { items = {}, count = 0 }
+    save_data()
+    system:toast("All data cleared")
+  end
+  render()
+end
+`,
+
+  'mikrotik': `-- MikroTik Widget Template
+-- Router monitoring via REST API
+
+local CONFIG = {
+  ip = "10.1.1.1",
+  user = "admin",
+  pass = "admin123"
+}
+
+-- State
+local state = {
+  loading = true,
+  error = nil,
+  cpu = 0,
+  ram = 0,
+  uptime = ""
+}
+
+-- Helper functions
+local function get_url(endpoint)
+  return string.format("http://%s:%s@%s%s",
+    CONFIG.user, CONFIG.pass, CONFIG.ip, endpoint)
+end
+
+local function safe_decode(data)
+  if not data or data == "" then return nil end
+  local ok, result = pcall(json.decode, data)
+  if ok then return result end
+  return nil
+end
+
+local function progress_bar(value, max, width)
+  width = width or 10
+  if max == 0 then max = 1 end
+  local pct = math.min(value / max, 1)
+  local filled = math.floor(pct * width)
+  return string.rep("█", filled) .. string.rep("░", width - filled)
+end
+
+local function render()
+  if state.loading then
+    ui:show_text("⏳ Connecting to " .. CONFIG.ip .. "...")
+    return
+  end
+
+  if state.error then
+    ui:show_text("❌ " .. state.error .. "\\n\\nTap to retry")
+    return
+  end
+
+  local lines = {
+    "🔧 MikroTik Monitor",
+    "",
+    string.format("🖥 CPU  %s %d%%", progress_bar(state.cpu, 100, 8), state.cpu),
+    string.format("💾 RAM  %s %d%%", progress_bar(state.ram, 100, 8), state.ram),
+    "⏱ Uptime: " .. state.uptime,
+    "",
+    "━━━━━━━━━━━━━━━━━━━━",
+    "Tap to refresh"
+  }
+  ui:show_text(table.concat(lines, "\\n"))
+end
+
+local function fetch_data()
+  state.loading = true
+  state.error = nil
+  render()
+
+  http:get(get_url("/rest/system/resource"), function(body, code)
+    state.loading = false
+
+    if code == 200 and body then
+      local data = safe_decode(body)
+      if data then
+        local total_mem = tonumber(data["total-memory"]) or 1
+        local free_mem = tonumber(data["free-memory"]) or 0
+        state.cpu = tonumber(data["cpu-load"]) or 0
+        state.ram = math.floor(((total_mem - free_mem) / total_mem) * 100)
+        state.uptime = data["uptime"] or "?"
+      else
+        state.error = "Failed to parse response"
+      end
+    else
+      state.error = "Connection failed"
+    end
+
+    render()
+  end)
+end
+
+-- Callbacks
+function on_resume()
+  fetch_data()
+end
+
+function on_click()
+  fetch_data()
+end
+
+function on_long_click()
+  ui:show_context_menu({
+    "🔄 Refresh",
+    "🌐 Open WebFig",
+    "⚙️ Settings"
+  })
+end
+
+function on_context_menu_click(index)
+  if index == 1 then
+    fetch_data()
+  elseif index == 2 then
+    system:open_browser("http://" .. CONFIG.ip)
+  elseif index == 3 then
+    ui:show_text("⚙️ Settings\\n\\nRouter: " .. CONFIG.ip)
+  end
+end
+`,
+
+  'tracker': `-- Tracker Widget Template
+-- Track habits, goals, or metrics over time
+
+local STORAGE_KEY = "tracker_data"
+local MAX_HISTORY = 30
+
+-- State
+local state = {
+  today_value = 0,
+  goal = 10,
+  history = {},
+  current_date = ""
+}
+
+-- Helper functions
+local function get_today()
+  return os.date("%Y-%m-%d")
+end
+
+local function load_data()
+  local data = storage:get(STORAGE_KEY)
+  if data then
+    local decoded = json.decode(data)
+    if decoded then
+      return decoded
+    end
+  end
+  return { today = 0, goal = 10, history = {}, date = "" }
+end
+
+local function save_data()
+  storage:put(STORAGE_KEY, json.encode({
+    today = state.today_value,
+    goal = state.goal,
+    history = state.history,
+    date = state.current_date
+  }))
+end
+
+local function reset_if_new_day(saved)
+  local today = get_today()
+  if saved.date ~= today then
+    if saved.date ~= "" then
+      table.insert(state.history, { date = saved.date, value = saved.today })
+      while #state.history > MAX_HISTORY do
+        table.remove(state.history, 1)
+      end
+    end
+    state.today_value = 0
+    state.current_date = today
+  else
+    state.today_value = saved.today or 0
+    state.current_date = today
+  end
+end
+
+local function get_streak()
+  local streak = 0
+  if state.today_value >= state.goal then
+    streak = 1
+  end
+  for i = #state.history, 1, -1 do
+    if state.history[i].value >= state.goal then
+      streak = streak + 1
+    else
+      break
+    end
+  end
+  return streak
+end
+
+local function progress_bar(value, max)
+  local pct = math.min(value / max, 1)
+  local filled = math.floor(pct * 10)
+  return string.rep("█", filled) .. string.rep("░", 10 - filled)
+end
+
+local function render()
+  local percent = math.floor((state.today_value / state.goal) * 100)
+  local streak = get_streak()
+
+  local lines = {
+    "📈 Daily Tracker",
+    "",
+    "📊 Today: " .. state.today_value .. "/" .. state.goal,
+    "   " .. progress_bar(state.today_value, state.goal) .. " " .. percent .. "%",
+    ""
+  }
+
+  if streak > 0 then
+    table.insert(lines, "🔥 Streak: " .. streak .. " days")
+  end
+
+  table.insert(lines, "")
+  table.insert(lines, "━━━━━━━━━━━━━━━━━━━━")
+  table.insert(lines, "Tap: +1 | Long: Menu")
+
+  ui:show_text(table.concat(lines, "\\n"))
+
+  -- Show chart
+  local values = {}
+  for _, h in ipairs(state.history) do
+    table.insert(values, h.value)
+  end
+  table.insert(values, state.today_value)
+  if #values >= 2 then
+    ui:show_chart(values, nil, "Progress", true)
+  end
+end
+
+-- Callbacks
+function on_resume()
+  local saved = load_data()
+  state.goal = saved.goal or 10
+  state.history = saved.history or {}
+  reset_if_new_day(saved)
+  render()
+end
+
+function on_click()
+  state.today_value = state.today_value + 1
+  save_data()
+  if state.today_value == state.goal then
+    system:toast("🎉 Goal reached!")
+  else
+    system:toast("+" .. 1)
+  end
+  render()
+end
+
+function on_long_click()
+  ui:show_context_menu({
+    "➕ Add 1",
+    "➕ Add 5",
+    "➖ Remove 1",
+    "🔄 Reset Today",
+    "📊 Statistics"
+  })
+end
+
+function on_context_menu_click(index)
+  if index == 1 then
+    state.today_value = state.today_value + 1
+  elseif index == 2 then
+    state.today_value = state.today_value + 5
+  elseif index == 3 then
+    state.today_value = math.max(0, state.today_value - 1)
+  elseif index == 4 then
+    state.today_value = 0
+  elseif index == 5 then
+    local total = state.today_value
+    for _, h in ipairs(state.history) do
+      total = total + h.value
+    end
+    local days = #state.history + 1
+    local avg = days > 0 and total / days or 0
+    ui:show_text("📊 Statistics\\n\\nTotal: " .. total .. "\\nDays: " .. days .. "\\nAvg: " .. string.format("%.1f", avg))
+    return
+  end
+  save_data()
+  render()
+end
+`
+};
+
+const CODE_SNIPPETS = {
+  'http-get': `http:get("https://api.example.com/data", function(body, code)
+  if code == 200 and body then
+    local data = json.decode(body)
+    -- Process data
+  else
+    -- Handle error
+  end
+end)`,
+
+  'http-post': `local headers = {
+  "Content-Type: application/json",
+  "Authorization: Bearer YOUR_TOKEN"
+}
+
+local body = json.encode({
+  key = "value"
+})
+
+http:post("https://api.example.com/data", body, headers, function(response, code)
+  if code == 200 then
+    -- Success
+  else
+    -- Handle error
+  end
+end)`,
+
+  'storage-get': `local function load_data()
+  local data = storage:get("my_key")
+  if data then
+    local decoded = json.decode(data)
+    if decoded then
+      return decoded
+    end
+  end
+  return { default = "value" }
+end`,
+
+  'storage-put': `local function save_data(data)
+  storage:put("my_key", json.encode(data))
+end
+
+-- Usage:
+save_data({ count = 42, items = {"a", "b", "c"} })`,
+
+  'show-text': `local lines = {
+  "📦 Widget Title",
+  "",
+  "Line 1 content",
+  "Line 2 content",
+  "",
+  "━━━━━━━━━━━━━━━━━━━━",
+  "Footer text"
+}
+ui:show_text(table.concat(lines, "\\n"))`,
+
+  'show-chart': `-- Values for the chart (array of numbers)
+local values = { 10, 25, 15, 30, 20, 35 }
+
+-- Optional: labels for each point
+local labels = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" }
+
+-- Show the chart
+ui:show_chart(values, labels, "My Chart Title", true)`,
+
+  'context-menu': `function on_long_click()
+  ui:show_context_menu({
+    "🔄 Option 1",
+    "⚙️ Option 2",
+    "━━━━━━━━━━━━",
+    "🗑️ Delete"
+  })
+end
+
+function on_context_menu_click(index)
+  if index == 1 then
+    -- Handle option 1
+  elseif index == 2 then
+    -- Handle option 2
+  elseif index == 4 then
+    -- Handle delete
+  end
+end`,
+
+  'progress-bar': `-- Simple progress bar function
+local function progress_bar(value, max, width)
+  width = width or 10
+  if max == 0 then max = 1 end
+  local pct = math.min(value / max, 1)
+  local filled = math.floor(pct * width)
+  return string.rep("█", filled) .. string.rep("░", width - filled)
+end
+
+-- Usage
+ui:show_progress_bar("Loading", 75, 100, "#4CAF50")
+
+-- Or build your own
+local bar = progress_bar(75, 100, 10)
+ui:show_text("Progress: " .. bar .. " 75%")`,
+
+  'json-parse': `local function safe_decode(data)
+  if not data or data == "" then return nil end
+  local ok, result = pcall(json.decode, data)
+  if ok then return result end
+  return nil
+end
+
+-- Usage
+local data = safe_decode(json_string)
+if data then
+  -- Access data.field
+end`,
+
+  'format-bytes': `local function format_bytes(bytes)
+  bytes = tonumber(bytes) or 0
+  if bytes >= 1073741824 then
+    return string.format("%.1f GB", bytes / 1073741824)
+  elseif bytes >= 1048576 then
+    return string.format("%.1f MB", bytes / 1048576)
+  elseif bytes >= 1024 then
+    return string.format("%.1f KB", bytes / 1024)
+  else
+    return string.format("%d B", bytes)
+  end
+end
+
+-- Usage
+local size = format_bytes(1536000)  -- "1.5 MB"`
+};
+
+function loadTemplate(templateName) {
+  const template = WIDGET_TEMPLATES[templateName];
+  if (template && editor) {
+    editor.setValue(template);
+    showTemplateToast('Template loaded: ' + templateName);
+
+    // Switch to editor panel if on mobile
+    const editorPanel = document.getElementById('editorPanel');
+    if (editorPanel) {
+      editorPanel.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+}
+
+function insertSnippet(snippetName) {
+  const snippet = CODE_SNIPPETS[snippetName];
+  if (snippet && editor) {
+    const position = editor.getPosition();
+    const selection = editor.getSelection();
+
+    editor.executeEdits('', [{
+      range: selection,
+      text: snippet,
+      forceMoveMarkers: true
+    }]);
+
+    showTemplateToast('Snippet inserted: ' + snippetName);
+    editor.focus();
+  }
+}
+
+function showTemplateToast(message) {
+  const existing = document.querySelector('.template-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'template-toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  setTimeout(() => toast.remove(), 2000);
+}
+
+function exportWidget() {
+  if (!editor) return;
+
+  const code = editor.getValue();
+  if (!code.trim()) {
+    showTemplateToast('No code to export');
+    return;
+  }
+
+  // Get widget name from first comment or generate one
+  const nameMatch = code.match(/^--\s*(.+)/);
+  const widgetName = nameMatch ? nameMatch[1].replace(/[^a-zA-Z0-9]/g, '_').toLowerCase() : 'widget';
+  const filename = widgetName + '.lua';
+
+  const blob = new Blob([code], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+
+  URL.revokeObjectURL(url);
+  showTemplateToast('Widget exported: ' + filename);
+}
+
+function importWidget() {
+  document.getElementById('importFileInput').click();
+}
+
+function handleImportFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    if (editor) {
+      editor.setValue(e.target.result);
+      showTemplateToast('Widget imported: ' + file.name);
+    }
+  };
+  reader.readAsText(file);
+
+  // Reset input so same file can be imported again
+  event.target.value = '';
+}
+
+async function importFromUrl() {
+  const url = prompt('Enter widget URL (.lua file):');
+  if (!url) return;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch');
+
+    const code = await response.text();
+    if (editor) {
+      editor.setValue(code);
+      showTemplateToast('Widget imported from URL');
+    }
+  } catch (error) {
+    showTemplateToast('Failed to import: ' + error.message);
+  }
+}
+
+// Setup templates event listeners
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(() => {
+    // Template cards
+    document.querySelectorAll('.template-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const template = card.dataset.template;
+        if (template) {
+          loadTemplate(template);
+        }
+      });
+    });
+
+    // Snippet cards
+    document.querySelectorAll('.snippet-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const snippet = card.dataset.snippet;
+        if (snippet) {
+          insertSnippet(snippet);
+        }
+      });
+    });
+
+    // Export/Import buttons
+    const exportBtn = document.getElementById('exportWidgetBtn');
+    if (exportBtn) exportBtn.addEventListener('click', exportWidget);
+
+    const importBtn = document.getElementById('importWidgetBtn');
+    if (importBtn) importBtn.addEventListener('click', importWidget);
+
+    const importUrlBtn = document.getElementById('importFromUrlBtn');
+    if (importUrlBtn) importUrlBtn.addEventListener('click', importFromUrl);
+
+    const importFileInput = document.getElementById('importFileInput');
+    if (importFileInput) importFileInput.addEventListener('change', handleImportFile);
+  }, 100);
+});
+
+// ============================================================================
 // Initialization Complete
 // ============================================================================
 
