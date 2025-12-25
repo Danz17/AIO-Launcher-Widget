@@ -13,6 +13,7 @@ let useMocks = true;  // Default to mock mode
 let mockFile = null;
 let httpMode = 'mock';
 let httpLogCallback = null;  // Callback to send logs to frontend
+let globalHeaders = {};  // Headers set via http:set_headers()
 
 // Set callback for HTTP logging
 export function setHttpLogCallback(callback) {
@@ -93,13 +94,35 @@ function getMockResponse(url) {
 
 
 export const http = {
+    // Set global headers for all subsequent requests
+    set_headers: function(headers) {
+        if (Array.isArray(headers)) {
+            // Format: {"Header1: value1", "Header2: value2"}
+            globalHeaders = {};
+            headers.forEach(h => {
+                if (typeof h === 'string') {
+                    const colonIdx = h.indexOf(':');
+                    if (colonIdx > 0) {
+                        const key = h.substring(0, colonIdx).trim();
+                        const value = h.substring(colonIdx + 1).trim();
+                        globalHeaders[key] = value;
+                    }
+                }
+            });
+        } else if (typeof headers === 'object' && headers !== null) {
+            // Format: {["Header1"] = "value1", ["Header2"] = "value2"}
+            globalHeaders = { ...headers };
+        }
+        console.log(chalk.gray(`[HTTP] Global headers set: ${JSON.stringify(globalHeaders)}`));
+    },
+
     get: function(url, callbackOrBody, headersOrCallback, maybeHeaders) {
         // Handle both formats:
         // Format 1: http:get(url, callback, headers)
         // Format 2: http:get(url, "", callback, headers) - AIO Launcher format
         
         let callback, headers;
-        
+
         if (typeof callbackOrBody === 'function') {
             // Format 1: http:get(url, callback, headers)
             callback = callbackOrBody;
@@ -109,7 +132,11 @@ export const http = {
             callback = headersOrCallback;
             headers = maybeHeaders;
         }
-        
+
+        // Merge global headers with request-specific headers
+        const mergedHeaders = { ...globalHeaders, ...(headers || {}) };
+        headers = Object.keys(mergedHeaders).length > 0 ? mergedHeaders : null;
+
         // Convert URL to string if it's a Lua string object
         let urlStr = url;
         if (typeof url !== 'string') {
@@ -377,6 +404,11 @@ export const http = {
         const urlStr = (typeof url === 'string') ? url : String(url);
         const requestId = Date.now() + Math.random();
         const bodyStr = typeof body === 'string' ? body : JSON.stringify(body);
+
+        // Merge global headers with request-specific headers
+        const mergedHeaders = { ...globalHeaders, ...(headers || {}) };
+        headers = Object.keys(mergedHeaders).length > 0 ? mergedHeaders : null;
+
         const requestDetails = {
             method: 'POST',
             url: urlStr,

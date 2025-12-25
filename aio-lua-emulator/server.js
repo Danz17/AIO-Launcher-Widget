@@ -12,7 +12,7 @@ import { http, loadMocks, setHttpMode, setHttpLogCallback } from './api/http.js'
 import { json } from './api/json.js';
 import { system } from './api/system.js';
 import { android } from './api/android.js';
-import { storage } from './api/storage.js';
+import { storage, files } from './api/storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -32,20 +32,44 @@ function initLua() {
     const L = lauxlib.luaL_newstate();
     lualib.luaL_openlibs(L);
     
-    // Create ui module
-    lua.lua_createtable(L, 0, 2);
+    // Create ui module - ALL functions
+    lua.lua_createtable(L, 0, 13);
     lua.lua_pushcfunction(L, luaWrapFunction(ui.show_text, true));
     lua.lua_setfield(L, -2, to_luastring("show_text"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_lines, true));
+    lua.lua_setfield(L, -2, to_luastring("show_lines"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_buttons, true));
+    lua.lua_setfield(L, -2, to_luastring("show_buttons"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_table, true));
+    lua.lua_setfield(L, -2, to_luastring("show_table"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_progress_bar, true));
+    lua.lua_setfield(L, -2, to_luastring("show_progress_bar"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_chart, true));
+    lua.lua_setfield(L, -2, to_luastring("show_chart"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.show_toast, true));
+    lua.lua_setfield(L, -2, to_luastring("show_toast"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.set_title, true));
+    lua.lua_setfield(L, -2, to_luastring("set_title"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.set_expandable, true));
+    lua.lua_setfield(L, -2, to_luastring("set_expandable"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.is_folded, true));
+    lua.lua_setfield(L, -2, to_luastring("is_folded"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.is_expanded, true));
+    lua.lua_setfield(L, -2, to_luastring("is_expanded"));
+    lua.lua_pushcfunction(L, luaWrapFunction(ui.set_progress, true));
+    lua.lua_setfield(L, -2, to_luastring("set_progress"));
     lua.lua_pushcfunction(L, luaWrapFunction(ui.show_context_menu, true));
     lua.lua_setfield(L, -2, to_luastring("show_context_menu"));
     lua.lua_setglobal(L, to_luastring("ui"));
     
     // Create http module
-    lua.lua_createtable(L, 0, 2);
+    lua.lua_createtable(L, 0, 3);
     lua.lua_pushcfunction(L, luaWrapFunction(http.get, true));
     lua.lua_setfield(L, -2, to_luastring("get"));
     lua.lua_pushcfunction(L, luaWrapFunction(http.post, true));
     lua.lua_setfield(L, -2, to_luastring("post"));
+    lua.lua_pushcfunction(L, luaWrapFunction(http.set_headers, true));
+    lua.lua_setfield(L, -2, to_luastring("set_headers"));
     lua.lua_setglobal(L, to_luastring("http"));
     
     // Create json module
@@ -56,14 +80,32 @@ function initLua() {
     lua.lua_setfield(L, -2, to_luastring("encode"));
     lua.lua_setglobal(L, to_luastring("json"));
     
-    // Create system module
-    lua.lua_createtable(L, 0, 3);
+    // Create system module - ALL functions
+    lua.lua_createtable(L, 0, 12);
     lua.lua_pushcfunction(L, luaWrapFunction(system.open_browser, true));
     lua.lua_setfield(L, -2, to_luastring("open_browser"));
     lua.lua_pushcfunction(L, luaWrapFunction(system.toast, true));
     lua.lua_setfield(L, -2, to_luastring("toast"));
+    lua.lua_pushcfunction(L, luaWrapFunction(system.vibrate, true));
+    lua.lua_setfield(L, -2, to_luastring("vibrate"));
+    lua.lua_pushcfunction(L, luaWrapFunction(system.copy_to_clipboard, true));
+    lua.lua_setfield(L, -2, to_luastring("copy_to_clipboard"));
+    lua.lua_pushcfunction(L, luaWrapFunction(system.clipboard, true));
+    lua.lua_setfield(L, -2, to_luastring("clipboard"));
+    lua.lua_pushcfunction(L, luaWrapFunction(system.share_text, true));
+    lua.lua_setfield(L, -2, to_luastring("share_text"));
+    lua.lua_pushcfunction(L, luaWrapFunction(system.lang, true));
+    lua.lua_setfield(L, -2, to_luastring("lang"));
+    lua.lua_pushcfunction(L, luaWrapFunction(system.tz, true));
+    lua.lua_setfield(L, -2, to_luastring("tz"));
+    lua.lua_pushcfunction(L, luaWrapFunction(system.tz_offset, true));
+    lua.lua_setfield(L, -2, to_luastring("tz_offset"));
     lua.lua_pushcfunction(L, luaWrapFunction(system.hmac_sha256, true));
     lua.lua_setfield(L, -2, to_luastring("hmac_sha256"));
+    lua.lua_pushcfunction(L, luaWrapFunction(system.battery_info, true));
+    lua.lua_setfield(L, -2, to_luastring("battery_info"));
+    lua.lua_pushcfunction(L, luaWrapFunction(system.network_state, true));
+    lua.lua_setfield(L, -2, to_luastring("network_state"));
     lua.lua_setglobal(L, to_luastring("system"));
     
     // Create android module
@@ -75,7 +117,31 @@ function initLua() {
         }
     }
     lua.lua_setglobal(L, to_luastring("android"));
-    
+
+    // Create storage module
+    lua.lua_createtable(L, 0, 5);
+    lua.lua_pushcfunction(L, luaWrapFunction(storage.get, true));
+    lua.lua_setfield(L, -2, to_luastring("get"));
+    lua.lua_pushcfunction(L, luaWrapFunction(storage.set, true));
+    lua.lua_setfield(L, -2, to_luastring("put"));  // AIO uses 'put' not 'set'
+    lua.lua_pushcfunction(L, luaWrapFunction(storage.delete, true));
+    lua.lua_setfield(L, -2, to_luastring("delete"));
+    lua.lua_pushcfunction(L, luaWrapFunction(storage.has, true));
+    lua.lua_setfield(L, -2, to_luastring("has"));
+    lua.lua_pushcfunction(L, luaWrapFunction(storage.keys, true));
+    lua.lua_setfield(L, -2, to_luastring("keys"));
+    lua.lua_setglobal(L, to_luastring("storage"));
+
+    // Create files module
+    lua.lua_createtable(L, 0, 4);
+    lua.lua_pushcfunction(L, luaWrapFunction(files.read, true));
+    lua.lua_setfield(L, -2, to_luastring("read"));
+    lua.lua_pushcfunction(L, luaWrapFunction(files.write, true));
+    lua.lua_setfield(L, -2, to_luastring("write"));
+    lua.lua_pushcfunction(L, luaWrapFunction(files.exists, true));
+    lua.lua_setfield(L, -2, to_luastring("exists"));
+    lua.lua_setglobal(L, to_luastring("files"));
+
     return L;
 }
 
@@ -161,31 +227,69 @@ function createLuaCallback(L, index) {
     };
 }
 
-// Convert Lua table to JavaScript object
+// Convert Lua table to JavaScript object/array
 function luaTableToJS(L, index) {
-    const obj = {};
-    lua.lua_pushnil(L);
-    while (lua.lua_next(L, index) !== 0) {
-        const key = lua.lua_tojsstring(L, -2);
-        const type = lua.lua_type(L, -1);
-        let value;
-        
-        if (type === lua.LUA_TSTRING) {
-            value = lua.lua_tojsstring(L, -1);
-        } else if (type === lua.LUA_TNUMBER) {
-            value = lua.lua_tonumber(L, -1);
-        } else if (type === lua.LUA_TBOOLEAN) {
-            value = lua.lua_toboolean(L, -1);
-        } else if (type === lua.LUA_TTABLE) {
-            value = luaTableToJS(L, -1);
-        } else {
-            value = null;
+    // First, check if table is an array (sequential integer keys starting from 1)
+    const isArray = lua.lua_rawlen(L, index) > 0;
+
+    if (isArray) {
+        // Handle as array
+        const arr = [];
+        const len = lua.lua_rawlen(L, index);
+        for (let i = 1; i <= len; i++) {
+            lua.lua_rawgeti(L, index, i);
+            const type = lua.lua_type(L, -1);
+            let value;
+
+            if (type === lua.LUA_TSTRING) {
+                value = lua.lua_tojsstring(L, -1);
+            } else if (type === lua.LUA_TNUMBER) {
+                value = lua.lua_tonumber(L, -1);
+            } else if (type === lua.LUA_TBOOLEAN) {
+                value = lua.lua_toboolean(L, -1);
+            } else if (type === lua.LUA_TTABLE) {
+                value = luaTableToJS(L, lua.lua_gettop(L));
+            } else {
+                value = null;
+            }
+
+            arr.push(value);
+            lua.lua_pop(L, 1);
         }
-        
-        obj[key] = value;
-        lua.lua_pop(L, 1);
+        return arr;
+    } else {
+        // Handle as object
+        const obj = {};
+        lua.lua_pushnil(L);
+        while (lua.lua_next(L, index) !== 0) {
+            const keyType = lua.lua_type(L, -2);
+            let key;
+            if (keyType === lua.LUA_TNUMBER) {
+                key = lua.lua_tonumber(L, -2);
+            } else {
+                key = lua.lua_tojsstring(L, -2);
+            }
+
+            const type = lua.lua_type(L, -1);
+            let value;
+
+            if (type === lua.LUA_TSTRING) {
+                value = lua.lua_tojsstring(L, -1);
+            } else if (type === lua.LUA_TNUMBER) {
+                value = lua.lua_tonumber(L, -1);
+            } else if (type === lua.LUA_TBOOLEAN) {
+                value = lua.lua_toboolean(L, -1);
+            } else if (type === lua.LUA_TTABLE) {
+                value = luaTableToJS(L, lua.lua_gettop(L));
+            } else {
+                value = null;
+            }
+
+            obj[key] = value;
+            lua.lua_pop(L, 1);
+        }
+        return obj;
     }
-    return obj;
 }
 
 // Convert JavaScript object to Lua table
@@ -745,10 +849,16 @@ const AIO_API_REFERENCE = `
 ✅ ui:show_text(text)              → Display simple text string
 ✅ ui:show_lines(lines_table)      → Display array of text lines
 ✅ ui:show_table(rows_table)       → Display table with rows
-✅ ui:show_buttons(buttons, callback_name) → Display clickable buttons
-✅ ui:show_progress(value, max)    → Show progress bar (0-100)
-✅ ui:show_chart(data, options)    → Show chart visualization
-✅ ui:set_folding_mark(text)       → Set folding marker text
+✅ ui:show_buttons(buttons, colors) → Display clickable buttons
+✅ ui:show_progress_bar(text, value, max, color) → Show progress bar
+✅ ui:show_chart(points, format, title) → Show chart visualization
+✅ ui:show_toast(message)          → Show toast notification
+✅ ui:set_title(title)             → Set widget title
+✅ ui:set_expandable()             → Make widget expandable
+✅ ui:is_folded()                  → Check if widget is folded
+✅ ui:is_expanded()                → Check if widget is expanded
+✅ ui:set_progress(value)          → Set loading progress (0-1)
+✅ ui:show_context_menu(items, callback) → Show context menu
 
 ❌ DOES NOT EXIST: ui:set_headers, ui:show_header, ui:add_row, ui:clear
 
@@ -758,10 +868,11 @@ const AIO_API_REFERENCE = `
 ✅ http:get(url, headers_table, callback) → GET with headers
 ✅ http:post(url, body, callback)  → POST request
 ✅ http:post(url, body, headers_table, callback) → POST with headers
+✅ http:set_headers(headers)       → Set global headers for all requests
 
-Headers format: {["Authorization"] = "Basic xxx", ["Content-Type"] = "application/json"}
+Headers format: {"Authorization: Bearer xxx"} or {["Header"] = "value"}
 
-❌ DOES NOT EXIST: http:set_headers, http:request, http:put, http:delete, http:fetch
+❌ DOES NOT EXIST: http:request, http:put, http:delete, http:fetch
 
 📦 JSON MODULE (json.)
 ─────────────────────────────────────────────────────────────────────────────
@@ -775,15 +886,30 @@ Headers format: {["Authorization"] = "Basic xxx", ["Content-Type"] = "applicatio
 ✅ storage:get(key)                → Get stored value (returns nil if not found)
 ✅ storage:put(key, value)         → Store a value
 ✅ storage:delete(key)             → Delete a stored value
+✅ storage:has(key)                → Check if key exists
+✅ storage:keys()                  → Get all keys
 
 ❌ DOES NOT EXIST: storage:set, storage:save, storage:load, storage:clear
+
+📁 FILES MODULE (files:)
+─────────────────────────────────────────────────────────────────────────────
+✅ files:read(path)                → Read file contents
+✅ files:write(path, data, append) → Write to file (append=true to append)
+✅ files:exists(path)              → Check if file exists
 
 🔧 SYSTEM MODULE (system:)
 ─────────────────────────────────────────────────────────────────────────────
 ✅ system:toast(message)           → Show toast notification
 ✅ system:open_browser(url)        → Open URL in browser
-✅ system:vibrate()                → Vibrate device
+✅ system:vibrate(ms)              → Vibrate device
 ✅ system:copy_to_clipboard(text)  → Copy text to clipboard
+✅ system:clipboard()              → Get clipboard contents
+✅ system:share_text(text)         → Share text
+✅ system:lang()                   → Get system language
+✅ system:tz()                     → Get timezone string
+✅ system:tz_offset()              → Get timezone offset in minutes
+✅ system:battery_info()           → Get battery info {level, isCharging, temperature}
+✅ system:network_state()          → Get network info {connected, type, ssid}
 
 ❌ DOES NOT EXIST: system:log, system:print, system:notify, system:alert
 
