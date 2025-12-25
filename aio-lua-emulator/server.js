@@ -3,7 +3,7 @@
 // Web Server for Visual Emulator
 import express from 'express';
 import cors from 'cors';
-import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, unlinkSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, unlinkSync, mkdirSync, appendFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join, resolve } from 'path';
 import { lua, lauxlib, lualib, to_luastring } from 'fengari';
@@ -706,52 +706,120 @@ app.get('/api/mikrotik/traffic', async (req, res) => {
 // AI Script Inspector
 // ============================================================================
 
+// Logging directory for AI analysis
+const logsDir = resolve(__dirname, 'logs');
+if (!existsSync(logsDir)) {
+    mkdirSync(logsDir, { recursive: true });
+}
+
+function logInspectorAnalysis(originalScript, analysis, success = true) {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const logFile = join(logsDir, `inspector-${timestamp}.json`);
+
+    const logEntry = {
+        timestamp: new Date().toISOString(),
+        success,
+        originalScript,
+        analysis,
+        scriptPreview: originalScript.substring(0, 200) + '...'
+    };
+
+    writeFileSync(logFile, JSON.stringify(logEntry, null, 2), 'utf8');
+    console.log(`📝 Inspector log saved: ${logFile}`);
+
+    // Also append to summary log
+    const summaryFile = join(logsDir, 'inspector-summary.log');
+    const summaryLine = `[${logEntry.timestamp}] ${success ? '✓' : '✗'} ${logEntry.scriptPreview.replace(/\n/g, ' ').substring(0, 80)}\n`;
+    appendFileSync(summaryFile, summaryLine, 'utf8');
+}
+
+// STRICT API Reference - ONLY these functions exist in the emulator
 const AIO_API_REFERENCE = `
-AIO Launcher Widget API Reference:
+═══════════════════════════════════════════════════════════════════════════════
+                    AIO LAUNCHER WIDGET API - COMPLETE REFERENCE
+                    ⚠️ ONLY USE FUNCTIONS LISTED BELOW - NO OTHERS EXIST ⚠️
+═══════════════════════════════════════════════════════════════════════════════
 
-UI Functions (ui:):
-- ui:show_text(text) - Display simple text
-- ui:show_lines(lines_table) - Display multiple lines
-- ui:show_table(headers, rows) - Display data table
-- ui:show_buttons(buttons_table) - Display button row
-- ui:show_progress(value, max, text) - Show progress bar
-- ui:show_chart(data, options) - Show chart/graph
-- ui:show_context_menu(items, callback) - Context menu popup
-- ui:set_title(title) - Set widget title
+📱 UI MODULE (ui:)
+─────────────────────────────────────────────────────────────────────────────
+✅ ui:show_text(text)              → Display simple text string
+✅ ui:show_lines(lines_table)      → Display array of text lines
+✅ ui:show_table(rows_table)       → Display table with rows
+✅ ui:show_buttons(buttons, callback_name) → Display clickable buttons
+✅ ui:show_progress(value, max)    → Show progress bar (0-100)
+✅ ui:show_chart(data, options)    → Show chart visualization
+✅ ui:set_folding_mark(text)       → Set folding marker text
 
-HTTP Functions (http:):
-- http:get(url, callback) - GET request with callback(response, status)
-- http:get(url, headers, callback) - GET with custom headers
-- http:post(url, body, callback) - POST request
-- http:post(url, body, headers, callback) - POST with headers
-- Headers passed as Lua table: {["Authorization"] = "Bearer xxx"}
+❌ DOES NOT EXIST: ui:set_headers, ui:show_header, ui:add_row, ui:clear
 
-JSON Functions (json:):
-- json.decode(json_string) - Parse JSON to Lua table
-- json.encode(lua_table) - Convert Lua table to JSON
+🌐 HTTP MODULE (http:)
+─────────────────────────────────────────────────────────────────────────────
+✅ http:get(url, callback)         → GET request, callback receives (body, code)
+✅ http:get(url, headers_table, callback) → GET with headers
+✅ http:post(url, body, callback)  → POST request
+✅ http:post(url, body, headers_table, callback) → POST with headers
 
-Storage Functions (storage:):
-- storage:get(key) - Get stored value
-- storage:put(key, value) - Store value
-- storage:delete(key) - Remove value
+Headers format: {["Authorization"] = "Basic xxx", ["Content-Type"] = "application/json"}
 
-System Functions (system:):
-- system:toast(message) - Show toast notification
-- system:open_browser(url) - Open URL in browser
-- system:vibrate() - Vibrate device
-- system:copy_to_clipboard(text) - Copy to clipboard
+❌ DOES NOT EXIST: http:set_headers, http:request, http:put, http:delete, http:fetch
 
-Widget Callbacks:
-- function on_resume() - Called when widget becomes visible
-- function on_click() - Called on tap
-- function on_long_click() - Called on long press
-- function on_network_result(result) - Called after HTTP completes
+📦 JSON MODULE (json.)
+─────────────────────────────────────────────────────────────────────────────
+✅ json.decode(json_string)        → Parse JSON string to Lua table
+✅ json.encode(lua_table)          → Convert Lua table to JSON string
 
-Common Patterns:
-1. Always check for nil before using HTTP response
-2. Use pcall for error handling in callbacks
-3. Store API credentials in storage, not in code
-4. Base64 encode auth headers: require("base64").encode(user..":"..pass)
+❌ DOES NOT EXIST: json:decode, json:encode (use dot notation, not colon!)
+
+💾 STORAGE MODULE (storage:)
+─────────────────────────────────────────────────────────────────────────────
+✅ storage:get(key)                → Get stored value (returns nil if not found)
+✅ storage:put(key, value)         → Store a value
+✅ storage:delete(key)             → Delete a stored value
+
+❌ DOES NOT EXIST: storage:set, storage:save, storage:load, storage:clear
+
+🔧 SYSTEM MODULE (system:)
+─────────────────────────────────────────────────────────────────────────────
+✅ system:toast(message)           → Show toast notification
+✅ system:open_browser(url)        → Open URL in browser
+✅ system:vibrate()                → Vibrate device
+✅ system:copy_to_clipboard(text)  → Copy text to clipboard
+
+❌ DOES NOT EXIST: system:log, system:print, system:notify, system:alert
+
+📲 CALLBACK FUNCTIONS (define these in your script)
+─────────────────────────────────────────────────────────────────────────────
+✅ function on_resume()            → Called when widget loads/becomes visible
+✅ function on_click()             → Called when user taps widget
+✅ function on_long_click()        → Called on long press
+✅ function on_alarm()             → Called by scheduled alarm
+✅ function on_network_result(result, code) → HTTP response callback (DEPRECATED - use inline callbacks)
+
+🔤 STRING/UTILITY FUNCTIONS (Lua standard library)
+─────────────────────────────────────────────────────────────────────────────
+✅ string.format(fmt, ...)         → Format string
+✅ string.sub(s, i, j)             → Substring
+✅ string.gsub(s, pattern, repl)   → Pattern replace
+✅ string.match(s, pattern)        → Pattern match
+✅ string.len(s)                   → String length
+✅ tonumber(s)                     → Convert to number
+✅ tostring(n)                     → Convert to string
+✅ math.floor(n), math.ceil(n)     → Math operations
+✅ table.insert(t, v)              → Insert into table
+✅ table.concat(t, sep)            → Join table elements
+✅ pairs(t), ipairs(t)             → Table iteration
+✅ pcall(func, ...)                → Protected call (error handling)
+
+═══════════════════════════════════════════════════════════════════════════════
+                              ⚠️ CRITICAL RULES ⚠️
+═══════════════════════════════════════════════════════════════════════════════
+1. NEVER add functions that don't exist in the list above
+2. NEVER use http:set_headers() - headers go as 2nd param to http:get/post
+3. NEVER use json:decode() - use json.decode() (DOT not COLON)
+4. NEVER invent new APIs - if unsure, DON'T use it
+5. Keep the original script structure - only fix actual errors
+6. If the script works, make MINIMAL changes
+═══════════════════════════════════════════════════════════════════════════════
 `;
 
 app.post('/api/inspector/analyze', async (req, res) => {
@@ -766,45 +834,44 @@ app.post('/api/inspector/analyze', async (req, res) => {
             return res.status(400).json({ error: 'No API key provided' });
         }
 
-        const systemPrompt = `You are an expert AIO Launcher Lua widget script analyzer. Your role is to review scripts and provide helpful, actionable feedback.
+        const systemPrompt = `You are an expert AIO Launcher Lua widget script analyzer.
 
 ${AIO_API_REFERENCE}
 
-ANALYSIS FORMAT - Use this exact structure:
+YOUR TASK: Review the script and provide feedback using ONLY the APIs listed above.
+
+ANALYSIS FORMAT:
 
 ### Script Purpose
-Brief 1-2 sentence description of what this widget does.
+One sentence describing what this widget does.
 
-### API Usage Check
-List correct and incorrect API calls with line references:
-- Correct: list what's used correctly
-- Errors: list any API misuse with line numbers
+### API Check
+- ✅ Correct: [list correct API usage]
+- ❌ Errors: [list any wrong API calls with line numbers]
 
-### Best Practices
-- Error handling issues
-- Missing nil checks
-- Security concerns (hardcoded credentials)
-- Performance issues
-
-### Suggestions
-1. [Priority] Most important fix
-2. [Recommended] Other improvements
-3. [Optional] Nice-to-have enhancements
+### Issues Found
+List actual problems (not theoretical improvements):
+- Missing nil checks that could crash
+- Hardcoded credentials (security risk)
+- Logic errors
 
 ### Improved Script
 \`\`\`lua
--- Improved version with all fixes applied
--- Add comments explaining changes
--- Keep original functionality intact
+-- Enhanced by AIO Widget Emulator by Phenix
+-- ONLY fix actual errors, keep everything else the same
+-- DO NOT add new features or restructure working code
+[your improved code here]
 \`\`\`
 
-RULES:
-- Be concise but thorough
-- Focus on practical, actionable fixes
-- Preserve the script's original purpose
-- Add helpful comments in improved code
-- Follow Lua 5.3 conventions
-- Credit: "-- Enhanced by AIO Widget Emulator by Phenix"`;
+⚠️ CRITICAL INSTRUCTIONS:
+1. ONLY use APIs from the reference above - NEVER invent new ones
+2. If http:set_headers appears - REMOVE IT (doesn't exist)
+3. Headers go as 2nd parameter: http:get(url, {["Auth"]="xxx"}, callback)
+4. Use json.decode() NOT json:decode() (dot, not colon)
+5. If the script already works, make MINIMAL changes
+6. DO NOT restructure working code
+7. DO NOT add features the original didn't have
+8. Keep the original variable names and structure`;
 
         // Use Groq API (free tier with fast inference)
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -835,10 +902,14 @@ RULES:
         const data = await response.json();
         const analysis = data.choices?.[0]?.message?.content || 'No analysis generated';
 
+        // Log the analysis for review and debugging
+        logInspectorAnalysis(script, analysis, true);
+
         res.json({ success: true, analysis });
 
     } catch (error) {
         console.error('Inspector error:', error);
+        logInspectorAnalysis(script || 'No script', error.message, false);
         res.status(500).json({ error: error.message });
     }
 });
