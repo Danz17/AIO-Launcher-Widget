@@ -3,15 +3,16 @@
 // Web Server for Visual Emulator
 import express from 'express';
 import cors from 'cors';
-import { readFileSync, writeFileSync, existsSync, readdirSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync, unlinkSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join, resolve } from 'path';
 import { lua, lauxlib, lualib, to_luastring } from 'fengari';
 import { ui, clearOutput, getOutputBuffer } from './api/ui.js';
-import { http, loadMocks, setHttpMode } from './api/http.js';
+import { http, loadMocks, setHttpMode, setHttpLogCallback } from './api/http.js';
 import { json } from './api/json.js';
 import { system } from './api/system.js';
 import { android } from './api/android.js';
+import { storage } from './api/storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -255,7 +256,10 @@ function callLuaFunction(L, name, ...args) {
         const result = lua.lua_pcall(L, args.length, 0, 0);
         if (result !== lua.LUA_OK) {
             const error = lua.lua_tojsstring(L, -1);
-            throw new Error(`Error calling ${name}: ${error}`);
+            const errorObj = new Error(`Error calling ${name}: ${error}`);
+            errorObj.luaError = error;
+            errorObj.functionName = name;
+            throw errorObj;
         }
         return true;
     } else {
@@ -274,6 +278,12 @@ app.post('/api/execute', async (req, res) => {
         // Clear previous output
         clearOutput();
         
+        // Collect HTTP logs for this request
+        const httpLogs = [];
+        setHttpLogCallback((type, details) => {
+            httpLogs.push({ type, ...details, timestamp: new Date().toISOString() });
+        });
+        
         // Load mocks if provided
         if (mockData) {
             // Store mock data temporarily
@@ -286,15 +296,46 @@ app.post('/api/execute', async (req, res) => {
         const L = initLua();
         currentL = L;
         
-        // Load script
-        loadScript(L, script);
+        // Load script (may throw)
+        try {
+            loadScript(L, script);
+        } catch (loadError) {
+            setHttpLogCallback(null);
+            console.error('Lua load error:', loadError);
+            return res.status(500).json({
+                success: false,
+                error: loadError.message,
+                errorStack: loadError.stack,
+                errorType: 'LUA_LOAD_ERROR'
+            });
+        }
         
         // Wait a bit for async operations
         await new Promise(resolve => setTimeout(resolve, 100));
         
         // Call function if specified, otherwise call on_resume
         const funcToCall = functionName || 'on_resume';
-        const exists = callLuaFunction(L, funcToCall);
+        let exists = false;
+        try {
+            exists = callLuaFunction(L, funcToCall);
+        } catch (callError) {
+            setHttpLogCallback(null);
+            console.error('Lua runtime error:', callError);
+            console.error('Lua error details:', {
+                message: callError.message,
+                luaError: callError.luaError,
+                functionName: callError.functionName,
+                stack: callError.stack
+            });
+            return res.status(500).json({
+                success: false,
+                error: callError.message,
+                errorStack: callError.stack,
+                errorType: 'LUA_RUNTIME_ERROR',
+                luaError: callError.luaError,
+                functionName: callError.functionName
+            });
+        }
         
         // Wait for async operations to complete
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -302,15 +343,24 @@ app.post('/api/execute', async (req, res) => {
         // Get output
         const output = getOutputBuffer();
         
+        // Clear log callback
+        setHttpLogCallback(null);
+        
         res.json({
             success: true,
             output: output,
-            functionExists: exists
+            functionExists: exists,
+            httpLogs: httpLogs
         });
     } catch (error) {
+        setHttpLogCallback(null);
+        console.error('Unexpected error in /api/execute:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({
             success: false,
-            error: error.message
+            error: error.message,
+            errorStack: error.stack,
+            errorType: 'UNEXPECTED_ERROR'
         });
     }
 });
@@ -369,10 +419,20 @@ app.get('/api/widgets', (req, res) => {
         const mikrotikDir = resolve(__dirname, '..', 'Widgets', 'Mikrotik');
         const widgets = [];
         
-        // Scan Widgets directory (excluding Mikrotik subfolder)
+        // Scan Widgets directory (only files, not directories)
         if (existsSync(widgetsDir)) {
             const files = readdirSync(widgetsDir)
-                .filter(f => f.endsWith('.lua') && f !== 'Mikrotik')
+                .filter(f => {
+                    // Only include .lua files (not directories)
+                    if (!f.endsWith('.lua')) return false;
+                    try {
+                        const fullPath = join(widgetsDir, f);
+                        const stats = statSync(fullPath);
+                        return stats.isFile(); // Only files, not directories
+                    } catch {
+                        return false;
+                    }
+                })
                 .map(f => ({
                     name: f.replace('.lua', ''),
                     path: join(widgetsDir, f),
@@ -384,7 +444,16 @@ app.get('/api/widgets', (req, res) => {
         // Scan Mikrotik directory (now inside Widgets folder)
         if (existsSync(mikrotikDir)) {
             const files = readdirSync(mikrotikDir)
-                .filter(f => f.endsWith('.lua'))
+                .filter(f => {
+                    if (!f.endsWith('.lua')) return false;
+                    try {
+                        const fullPath = join(mikrotikDir, f);
+                        const stats = statSync(fullPath);
+                        return stats.isFile();
+                    } catch {
+                        return false;
+                    }
+                })
                 .map(f => ({
                     name: 'MikroTik - ' + f.replace('.lua', ''),
                     path: join(mikrotikDir, f),
@@ -393,8 +462,10 @@ app.get('/api/widgets', (req, res) => {
             widgets.push(...files);
         }
         
+        console.log(`Found ${widgets.length} widgets:`, widgets.map(w => w.name));
         res.json(widgets);
     } catch (error) {
+        console.error('Error loading widgets:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -406,10 +477,60 @@ app.get('/api/widgets/load', (req, res) => {
         if (!path || !existsSync(path)) {
             return res.status(404).json({ error: 'Widget not found' });
         }
-        
+
         const content = readFileSync(path, 'utf8');
         res.json({ content });
     } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Upload/save widget script
+app.post('/api/widgets/upload', (req, res) => {
+    try {
+        const { filename, content } = req.body;
+        if (!filename || !content) {
+            return res.status(400).json({ error: 'Missing filename or content' });
+        }
+
+        // Sanitize filename - only allow alphanumeric, underscore, hyphen
+        const safeName = filename.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const widgetsDir = resolve(__dirname, '..', 'Widgets');
+        const filePath = join(widgetsDir, `${safeName}.lua`);
+
+        writeFileSync(filePath, content, 'utf8');
+        console.log(`Widget saved: ${filePath}`);
+
+        res.json({ success: true, path: filePath, name: safeName });
+    } catch (error) {
+        console.error('Error saving widget:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete widget script
+app.delete('/api/widgets/:name', (req, res) => {
+    try {
+        const widgetName = req.params.name;
+        const widgetsDir = resolve(__dirname, '..', 'Widgets');
+        const mikrotikDir = resolve(__dirname, '..', 'Widgets', 'Mikrotik');
+
+        // Check both directories
+        let filePath = join(widgetsDir, `${widgetName}.lua`);
+        if (!existsSync(filePath)) {
+            filePath = join(mikrotikDir, `${widgetName}.lua`);
+        }
+
+        if (!existsSync(filePath)) {
+            return res.status(404).json({ error: 'Widget not found' });
+        }
+
+        unlinkSync(filePath);
+        console.log(`Widget deleted: ${filePath}`);
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting widget:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -433,6 +554,152 @@ app.post('/api/http-mode', (req, res) => {
 
 app.get('/api/http-mode', (req, res) => {
     res.json({ mode: currentHttpMode });
+});
+
+// Storage API endpoints
+app.get('/api/storage', (req, res) => {
+    try {
+        const data = storage.getAll();
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/storage', (req, res) => {
+    try {
+        storage.clear();
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Settings storage
+let currentSettings = {
+    mikrotik: { ip: '10.1.1.1', user: 'admin', pass: '' },
+    tuya: { clientId: '', secret: '' },
+    crypto: { apiKey: '' },
+    autoDelay: 1000
+};
+
+app.post('/api/settings', (req, res) => {
+    try {
+        currentSettings = { ...currentSettings, ...req.body };
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/settings', (req, res) => {
+    res.json(currentSettings);
+});
+
+// MikroTik monitoring endpoints
+app.get('/api/mikrotik/users', async (req, res) => {
+    try {
+        const { ip, user, pass } = req.query;
+        const routerIp = ip || currentSettings.mikrotik.ip;
+        const routerUser = user || currentSettings.mikrotik.user;
+        const routerPass = pass || currentSettings.mikrotik.pass;
+
+        const auth = Buffer.from(`${routerUser}:${routerPass}`).toString('base64');
+
+        // Try hotspot active users first
+        const hotspotResponse = await fetch(`http://${routerIp}/rest/ip/hotspot/active`, {
+            headers: { 'Authorization': `Basic ${auth}` }
+        });
+
+        if (hotspotResponse.ok) {
+            const hotspotUsers = await hotspotResponse.json();
+            res.json({ type: 'hotspot', users: hotspotUsers });
+            return;
+        }
+
+        // Try PPPoE active users
+        const pppoeResponse = await fetch(`http://${routerIp}/rest/ppp/active`, {
+            headers: { 'Authorization': `Basic ${auth}` }
+        });
+
+        if (pppoeResponse.ok) {
+            const pppoeUsers = await pppoeResponse.json();
+            res.json({ type: 'pppoe', users: pppoeUsers });
+            return;
+        }
+
+        res.json({ type: 'none', users: [], error: 'No active users found' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/mikrotik/interfaces', async (req, res) => {
+    try {
+        const { ip, user, pass } = req.query;
+        const routerIp = ip || currentSettings.mikrotik.ip;
+        const routerUser = user || currentSettings.mikrotik.user;
+        const routerPass = pass || currentSettings.mikrotik.pass;
+
+        const auth = Buffer.from(`${routerUser}:${routerPass}`).toString('base64');
+
+        const response = await fetch(`http://${routerIp}/rest/interface`, {
+            headers: { 'Authorization': `Basic ${auth}` }
+        });
+
+        if (response.ok) {
+            const interfaces = await response.json();
+            res.json(interfaces);
+        } else {
+            res.status(response.status).json({ error: 'Failed to fetch interfaces' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/mikrotik/traffic', async (req, res) => {
+    try {
+        const { ip, user, pass, iface } = req.query;
+        const routerIp = ip || currentSettings.mikrotik.ip;
+        const routerUser = user || currentSettings.mikrotik.user;
+        const routerPass = pass || currentSettings.mikrotik.pass;
+        const interfaceName = iface || 'ether1';
+
+        const auth = Buffer.from(`${routerUser}:${routerPass}`).toString('base64');
+
+        // Use interface monitor-traffic for real-time stats
+        const response = await fetch(`http://${routerIp}/rest/interface/monitor-traffic`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${auth}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                interface: interfaceName,
+                once: true
+            })
+        });
+
+        if (response.ok) {
+            const traffic = await response.json();
+            res.json(traffic);
+        } else {
+            // Fallback to interface stats
+            const statsResponse = await fetch(`http://${routerIp}/rest/interface?name=${interfaceName}`, {
+                headers: { 'Authorization': `Basic ${auth}` }
+            });
+
+            if (statsResponse.ok) {
+                const stats = await statsResponse.json();
+                res.json(stats[0] || {});
+            } else {
+                res.status(response.status).json({ error: 'Failed to fetch traffic' });
+            }
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 app.listen(PORT, () => {
