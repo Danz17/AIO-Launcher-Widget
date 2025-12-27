@@ -13,9 +13,6 @@ let allFolded = false;
 
 // Default settings
 const defaultSettings = {
-  mikrotik: { ip: '10.1.1.1', user: 'admin', pass: '' },
-  tuya: { clientId: '', secret: '' },
-  crypto: { apiKey: '' },
   groq: { apiKey: '' },
   autoDelay: 1000
 };
@@ -42,30 +39,12 @@ function saveSettings(settings) {
 
 function loadSettingsToForm() {
   const settings = getSettings();
-  document.getElementById('settingMtIp').value = settings.mikrotik?.ip || '';
-  document.getElementById('settingMtUser').value = settings.mikrotik?.user || '';
-  document.getElementById('settingMtPass').value = settings.mikrotik?.pass || '';
-  document.getElementById('settingTuyaId').value = settings.tuya?.clientId || '';
-  document.getElementById('settingTuyaSecret').value = settings.tuya?.secret || '';
-  document.getElementById('settingCryptoKey').value = settings.crypto?.apiKey || '';
   document.getElementById('settingGroqKey').value = settings.groq?.apiKey || '';
   document.getElementById('settingAutoDelay').value = settings.autoDelay || 1000;
 }
 
 function saveSettingsFromForm() {
   const settings = {
-    mikrotik: {
-      ip: document.getElementById('settingMtIp').value,
-      user: document.getElementById('settingMtUser').value,
-      pass: document.getElementById('settingMtPass').value
-    },
-    tuya: {
-      clientId: document.getElementById('settingTuyaId').value,
-      secret: document.getElementById('settingTuyaSecret').value
-    },
-    crypto: {
-      apiKey: document.getElementById('settingCryptoKey').value
-    },
     groq: {
       apiKey: document.getElementById('settingGroqKey').value
     },
@@ -74,9 +53,6 @@ function saveSettingsFromForm() {
   saveSettings(settings);
   showToast('Settings saved', 'success');
   closeSettingsModal();
-
-  // Sync settings to server
-  syncSettingsToServer(settings);
 }
 
 function resetSettingsForm() {
@@ -92,18 +68,6 @@ function openSettingsModal() {
 
 function closeSettingsModal() {
   document.getElementById('settingsModal').classList.remove('show');
-}
-
-async function syncSettingsToServer(settings) {
-  try {
-    await fetch('/api/settings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings)
-    });
-  } catch (e) {
-    console.error('Failed to sync settings:', e);
-  }
 }
 
 // ============================================================================
@@ -1267,234 +1231,8 @@ function restoreLayoutStates() {
   }
 }
 
-// ============================================================================
-// MikroTik Monitor
-// ============================================================================
-
-let monitorInterval = null;
-let speedHistory = { dl: [], ul: [], times: [] };
-const MAX_SPEED_POINTS = 60;
-
-async function fetchMikroTikUsers() {
-  try {
-    const response = await fetch('/api/mikrotik/users');
-    const data = await response.json();
-
-    const userList = document.getElementById('userList');
-    const userCount = document.getElementById('userCount');
-
-    if (data.error) {
-      userList.innerHTML = `<div class="log-empty small"><span>${escapeHtml(data.error)}</span></div>`;
-      userCount.textContent = '-';
-      return;
-    }
-
-    const users = data.users || [];
-    userCount.textContent = users.length;
-
-    if (users.length === 0) {
-      userList.innerHTML = '<div class="log-empty small"><span>No active users</span></div>';
-      return;
-    }
-
-    userList.innerHTML = users.slice(0, 20).map(user => `
-      <div class="user-item">
-        <span class="user-name">${escapeHtml(user.user || user.name || 'Unknown')}</span>
-        <span class="user-ip">${escapeHtml(user.address || user['caller-id'] || '-')}</span>
-      </div>
-    `).join('');
-  } catch (error) {
-    document.getElementById('userList').innerHTML =
-      `<div class="log-empty small"><span>Error: ${escapeHtml(error.message)}</span></div>`;
-    document.getElementById('userCount').textContent = '-';
-  }
-}
-
-async function fetchMikroTikInterfaces() {
-  try {
-    const response = await fetch('/api/mikrotik/interfaces');
-    const interfaces = await response.json();
-
-    const interfaceList = document.getElementById('interfaceList');
-    const interfaceSelect = document.getElementById('monitorInterface');
-
-    if (interfaces.error) {
-      interfaceList.innerHTML = `<div class="log-empty small"><span>${escapeHtml(interfaces.error)}</span></div>`;
-      return;
-    }
-
-    if (!Array.isArray(interfaces) || interfaces.length === 0) {
-      interfaceList.innerHTML = '<div class="log-empty small"><span>No interfaces found</span></div>';
-      return;
-    }
-
-    // Update interface list display
-    interfaceList.innerHTML = interfaces.slice(0, 10).map(iface => `
-      <div class="interface-item">
-        <span class="iface-name">${escapeHtml(iface.name || '-')}</span>
-        <span class="iface-status ${iface.running ? 'up' : 'down'}">${iface.running ? 'UP' : 'DOWN'}</span>
-      </div>
-    `).join('');
-
-    // Update interface selector
-    interfaceSelect.innerHTML = interfaces
-      .filter(i => i.type === 'ether' || i.type === 'pppoe-out' || i.type === 'bridge')
-      .map(iface => `<option value="${escapeHtml(iface.name)}">${escapeHtml(iface.name)}</option>`)
-      .join('');
-  } catch (error) {
-    document.getElementById('interfaceList').innerHTML =
-      `<div class="log-empty small"><span>Error: ${escapeHtml(error.message)}</span></div>`;
-  }
-}
-
-async function fetchTrafficStats() {
-  try {
-    const iface = document.getElementById('monitorInterface').value;
-    const response = await fetch(`/api/mikrotik/traffic?iface=${encodeURIComponent(iface)}`);
-    const data = await response.json();
-
-    if (data.error) {
-      return;
-    }
-
-    // Parse traffic data (values are in bytes/sec)
-    let rxBps = 0, txBps = 0;
-
-    if (Array.isArray(data) && data.length > 0) {
-      rxBps = parseInt(data[0]['rx-bits-per-second'] || 0) / 1000000;
-      txBps = parseInt(data[0]['tx-bits-per-second'] || 0) / 1000000;
-    } else if (data['rx-byte']) {
-      // Fallback to interface stats
-      rxBps = parseInt(data['rx-byte'] || 0) / 1000000;
-      txBps = parseInt(data['tx-byte'] || 0) / 1000000;
-    }
-
-    // Update speed display
-    document.getElementById('dlSpeed').textContent = rxBps.toFixed(2) + ' Mbps';
-    document.getElementById('ulSpeed').textContent = txBps.toFixed(2) + ' Mbps';
-
-    // Add to history
-    speedHistory.dl.push(rxBps);
-    speedHistory.ul.push(txBps);
-    speedHistory.times.push(new Date());
-
-    // Limit history
-    if (speedHistory.dl.length > MAX_SPEED_POINTS) {
-      speedHistory.dl.shift();
-      speedHistory.ul.shift();
-      speedHistory.times.shift();
-    }
-
-    // Draw chart
-    drawSpeedChart();
-  } catch (error) {
-    console.error('Traffic fetch error:', error);
-  }
-}
-
-function drawSpeedChart() {
-  const canvas = document.getElementById('speedChart');
-  if (!canvas) return;
-
-  const ctx = canvas.getContext('2d');
-  const width = canvas.width;
-  const height = canvas.height;
-
-  // Clear
-  ctx.fillStyle = '#1e1e1e';
-  ctx.fillRect(0, 0, width, height);
-
-  if (speedHistory.dl.length < 2) return;
-
-  // Find max value for scaling
-  const maxVal = Math.max(
-    Math.max(...speedHistory.dl),
-    Math.max(...speedHistory.ul),
-    1
-  );
-
-  const padding = 10;
-  const chartWidth = width - padding * 2;
-  const chartHeight = height - padding * 2;
-
-  // Draw download line (green)
-  ctx.beginPath();
-  ctx.strokeStyle = '#4ec9b0';
-  ctx.lineWidth = 2;
-  speedHistory.dl.forEach((val, i) => {
-    const x = padding + (i / (MAX_SPEED_POINTS - 1)) * chartWidth;
-    const y = height - padding - (val / maxVal) * chartHeight;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-
-  // Draw upload line (purple)
-  ctx.beginPath();
-  ctx.strokeStyle = '#c678dd';
-  ctx.lineWidth = 2;
-  speedHistory.ul.forEach((val, i) => {
-    const x = padding + (i / (MAX_SPEED_POINTS - 1)) * chartWidth;
-    const y = height - padding - (val / maxVal) * chartHeight;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-
-  // Draw max value label
-  ctx.fillStyle = '#6d6d6d';
-  ctx.font = '10px monospace';
-  ctx.fillText(maxVal.toFixed(1) + ' Mbps', padding, padding + 10);
-}
-
-function startMonitoring() {
-  if (monitorInterval) return;
-
-  monitorInterval = setInterval(fetchTrafficStats, 1000);
-  document.getElementById('startMonitor').disabled = true;
-  document.getElementById('stopMonitor').disabled = false;
-  showToast('Monitoring started', 'success');
-}
-
-function stopMonitoring() {
-  if (monitorInterval) {
-    clearInterval(monitorInterval);
-    monitorInterval = null;
-  }
-  document.getElementById('startMonitor').disabled = false;
-  document.getElementById('stopMonitor').disabled = true;
-  showToast('Monitoring stopped', 'info');
-}
-
-function refreshMonitorData() {
-  fetchMikroTikUsers();
-  fetchMikroTikInterfaces();
-  fetchTrafficStats();
-}
-
-// Setup monitor tab events
+// Setup mobile navigation
 document.addEventListener('DOMContentLoaded', () => {
-  // Monitor tab events (delayed to ensure elements exist)
-  setTimeout(() => {
-    const startBtn = document.getElementById('startMonitor');
-    const stopBtn = document.getElementById('stopMonitor');
-    const refreshBtn = document.getElementById('refreshMonitor');
-
-    if (startBtn) startBtn.addEventListener('click', startMonitoring);
-    if (stopBtn) stopBtn.addEventListener('click', stopMonitoring);
-    if (refreshBtn) refreshBtn.addEventListener('click', refreshMonitorData);
-
-    // Load monitor data when tab is selected
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        if (btn.dataset.tab === 'monitor') {
-          refreshMonitorData();
-        }
-      });
-    });
-  }, 100);
-
-  // Mobile navigation
   setupMobileNav();
 });
 

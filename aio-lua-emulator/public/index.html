@@ -238,12 +238,6 @@
               </svg>
               Console
             </button>
-            <button class="tab-btn" data-tab="monitor">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-              </svg>
-              Monitor
-            </button>
             <button class="tab-btn" data-tab="mockdata">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -324,83 +318,6 @@
                 </svg>
                 <span>Console output</span>
                 <small>System messages will appear here</small>
-              </div>
-            </div>
-          </div>
-
-          <!-- Monitor Tab -->
-          <div class="tab-content" id="monitorTab">
-            <div class="monitor-grid">
-              <!-- Connected Users Card -->
-              <div class="monitor-card">
-                <div class="monitor-card-header">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                  </svg>
-                  <span>Connected Users</span>
-                  <span class="monitor-value" id="userCount">-</span>
-                </div>
-                <div class="monitor-card-body">
-                  <div class="user-list" id="userList">
-                    <div class="log-empty small">
-                      <span>Configure MikroTik in Settings</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Interfaces Card -->
-              <div class="monitor-card">
-                <div class="monitor-card-header">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
-                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
-                    <line x1="6" y1="6" x2="6.01" y2="6"/>
-                    <line x1="6" y1="18" x2="6.01" y2="18"/>
-                  </svg>
-                  <span>Interfaces</span>
-                </div>
-                <div class="monitor-card-body">
-                  <div class="interface-list" id="interfaceList">
-                    <div class="log-empty small">
-                      <span>No interfaces loaded</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Speed Graph Card -->
-              <div class="monitor-card wide">
-                <div class="monitor-card-header">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                  </svg>
-                  <span>Traffic</span>
-                  <select id="monitorInterface" class="select-control small">
-                    <option value="ether1">ether1</option>
-                  </select>
-                </div>
-                <div class="monitor-card-body">
-                  <canvas id="speedChart" width="400" height="120"></canvas>
-                  <div class="speed-stats">
-                    <div class="speed-stat download">
-                      <span class="speed-label">↓ Download</span>
-                      <span class="speed-value" id="dlSpeed">0 Mbps</span>
-                    </div>
-                    <div class="speed-stat upload">
-                      <span class="speed-label">↑ Upload</span>
-                      <span class="speed-value" id="ulSpeed">0 Mbps</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="monitor-card-footer">
-                  <button class="btn btn-xs" id="startMonitor">Start Monitoring</button>
-                  <button class="btn btn-xs" id="stopMonitor" disabled>Stop</button>
-                  <button class="btn btn-xs" id="refreshMonitor">Refresh</button>
-                </div>
               </div>
             </div>
           </div>
@@ -790,33 +707,6 @@
         </button>
       </div>
       <div class="modal-body">
-        <!-- MikroTik Section -->
-        <section class="settings-section">
-          <h3>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
-              <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
-              <line x1="6" y1="6" x2="6.01" y2="6"/>
-              <line x1="6" y1="18" x2="6.01" y2="18"/>
-            </svg>
-            MikroTik Router
-          </h3>
-          <div class="settings-grid">
-            <label class="settings-field">
-              <span>Router IP</span>
-              <input type="text" id="settingMtIp" placeholder="10.1.1.1">
-            </label>
-            <label class="settings-field">
-              <span>Username</span>
-              <input type="text" id="settingMtUser" placeholder="admin">
-            </label>
-            <label class="settings-field">
-              <span>Password</span>
-              <input type="password" id="settingMtPass" placeholder="password">
-            </label>
-          </div>
-        </section>
-
         <!-- API Keys Section -->
         <section class="settings-section">
           <h3>
@@ -830,18 +720,6 @@
               <span>Groq API Key (for AI Inspector)</span>
               <input type="password" id="settingGroqKey" placeholder="gsk_...">
               <small class="setting-hint">Get free API key at <a href="https://console.groq.com" target="_blank">console.groq.com</a></small>
-            </label>
-            <label class="settings-field">
-              <span>Tuya Client ID</span>
-              <input type="text" id="settingTuyaId" placeholder="Client ID">
-            </label>
-            <label class="settings-field">
-              <span>Tuya Secret</span>
-              <input type="password" id="settingTuyaSecret" placeholder="Secret Key">
-            </label>
-            <label class="settings-field full-width">
-              <span>Crypto API Key</span>
-              <input type="password" id="settingCryptoKey" placeholder="API Key">
             </label>
           </div>
         </section>

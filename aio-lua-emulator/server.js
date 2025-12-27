@@ -681,26 +681,11 @@ app.delete('/api/storage', (req, res) => {
     }
 });
 
-// Settings storage
+// Settings storage (groq and autoDelay only - other settings removed)
 let currentSettings = {
-    mikrotik: { ip: '10.1.1.1', user: 'admin', pass: '' },
-    tuya: { clientId: '', secret: '' },
-    crypto: { apiKey: '' },
+    groq: { apiKey: '' },
     autoDelay: 1000
 };
-
-app.post('/api/settings', (req, res) => {
-    try {
-        currentSettings = { ...currentSettings, ...req.body };
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-app.get('/api/settings', (req, res) => {
-    res.json(currentSettings);
-});
 
 // Mock data endpoint for Android API customization
 app.post('/api/mock-data', (req, res) => {
@@ -744,112 +729,6 @@ app.post('/api/mock-data', (req, res) => {
     }
 
     res.json({ success: true, message: 'Mock data updated' });
-});
-
-// MikroTik monitoring endpoints
-app.get('/api/mikrotik/users', async (req, res) => {
-    try {
-        const { ip, user, pass } = req.query;
-        const routerIp = ip || currentSettings.mikrotik.ip;
-        const routerUser = user || currentSettings.mikrotik.user;
-        const routerPass = pass || currentSettings.mikrotik.pass;
-
-        const auth = Buffer.from(`${routerUser}:${routerPass}`).toString('base64');
-
-        // Try hotspot active users first
-        const hotspotResponse = await fetch(`http://${routerIp}/rest/ip/hotspot/active`, {
-            headers: { 'Authorization': `Basic ${auth}` }
-        });
-
-        if (hotspotResponse.ok) {
-            const hotspotUsers = await hotspotResponse.json();
-            res.json({ type: 'hotspot', users: hotspotUsers });
-            return;
-        }
-
-        // Try PPPoE active users
-        const pppoeResponse = await fetch(`http://${routerIp}/rest/ppp/active`, {
-            headers: { 'Authorization': `Basic ${auth}` }
-        });
-
-        if (pppoeResponse.ok) {
-            const pppoeUsers = await pppoeResponse.json();
-            res.json({ type: 'pppoe', users: pppoeUsers });
-            return;
-        }
-
-        res.json({ type: 'none', users: [], error: 'No active users found' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-app.get('/api/mikrotik/interfaces', async (req, res) => {
-    try {
-        const { ip, user, pass } = req.query;
-        const routerIp = ip || currentSettings.mikrotik.ip;
-        const routerUser = user || currentSettings.mikrotik.user;
-        const routerPass = pass || currentSettings.mikrotik.pass;
-
-        const auth = Buffer.from(`${routerUser}:${routerPass}`).toString('base64');
-
-        const response = await fetch(`http://${routerIp}/rest/interface`, {
-            headers: { 'Authorization': `Basic ${auth}` }
-        });
-
-        if (response.ok) {
-            const interfaces = await response.json();
-            res.json(interfaces);
-        } else {
-            res.status(response.status).json({ error: 'Failed to fetch interfaces' });
-        }
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-app.get('/api/mikrotik/traffic', async (req, res) => {
-    try {
-        const { ip, user, pass, iface } = req.query;
-        const routerIp = ip || currentSettings.mikrotik.ip;
-        const routerUser = user || currentSettings.mikrotik.user;
-        const routerPass = pass || currentSettings.mikrotik.pass;
-        const interfaceName = iface || 'ether1';
-
-        const auth = Buffer.from(`${routerUser}:${routerPass}`).toString('base64');
-
-        // Use interface monitor-traffic for real-time stats
-        const response = await fetch(`http://${routerIp}/rest/interface/monitor-traffic`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Basic ${auth}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                interface: interfaceName,
-                once: true
-            })
-        });
-
-        if (response.ok) {
-            const traffic = await response.json();
-            res.json(traffic);
-        } else {
-            // Fallback to interface stats
-            const statsResponse = await fetch(`http://${routerIp}/rest/interface?name=${interfaceName}`, {
-                headers: { 'Authorization': `Basic ${auth}` }
-            });
-
-            if (statsResponse.ok) {
-                const stats = await statsResponse.json();
-                res.json(stats[0] || {});
-            } else {
-                res.status(response.status).json({ error: 'Failed to fetch traffic' });
-            }
-        }
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
 });
 
 // ============================================================================
