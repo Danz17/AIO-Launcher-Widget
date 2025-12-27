@@ -135,6 +135,9 @@ require(['vs/editor/editor.main'], function() {
     }
   });
 
+  // Expose editor globally for deploy function
+  window.editor = editor;
+
   // Auto-run on content change
   editor.onDidChangeModelContent(() => {
     if (autoResumeEnabled) {
