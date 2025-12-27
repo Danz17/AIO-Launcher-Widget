@@ -13,6 +13,8 @@ import { json } from './api/json.js';
 import { system } from './api/system.js';
 import { android, setMockData } from './api/android.js';
 import { storage, files } from './api/storage.js';
+import { execSync } from 'child_process';
+import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -1231,8 +1233,128 @@ Do not include explanations outside the code block.`;
     }
 });
 
+
+
+// ============================================================================
+// Device Deployment API
+// ============================================================================
+
+
+// Get connected ADB devices
+app.get('/api/devices', (req, res) => {
+    try {
+        const output = execSync('adb devices -l', { encoding: 'utf8', timeout: 5000 });
+        // Handle Windows CRLF
+        const cleanOutput = output.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        const lines = cleanOutput.split('\n').slice(1);
+
+        const devices = [];
+        for (const line of lines) {
+            const trimmed = line.trim();
+            const match = trimmed.match(/^(\S+)\s+device\s+(.*)$/);
+            if (match) {
+                const id = match[1];
+                const info = match[2];
+                const modelMatch = info.match(/model:(\S+)/);
+                const model = modelMatch ? modelMatch[1].replace(/_/g, ' ') : 'Unknown Device';
+                devices.push({ id, model, label: model + ' (' + id + ')' });
+            }
+        }
+
+        res.json({ success: true, devices });
+    } catch (error) {
+        console.error('ADB error:', error.message);
+        res.json({ success: false, devices: [], error: error.message });
+    }
+});
+
+// Deploy widget to device
+app.post('/api/deploy-widget', async (req, res) => {
+    try {
+        const { widgetCode, widgetName, deviceId } = req.body;
+
+        if (!widgetCode || !widgetName || !deviceId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields: widgetCode, widgetName, deviceId'
+            });
+        }
+
+        // Sanitize widget name
+        const safeName = widgetName.replace(/[^a-zA-Z0-9_-]/g, '_') + '.lua';
+
+        // Write to temp file
+        const tempFile = join(os.tmpdir(), safeName);
+        writeFileSync(tempFile, widgetCode, 'utf8');
+
+        // Target path on device
+        const targetPath = '/sdcard/Android/data/ru.execbit.aiolauncher/files/' + safeName;
+
+        // Push to device
+        const pushCmd = process.platform === 'win32'
+            ? 'set MSYS_NO_PATHCONV=1 && adb -s ' + deviceId + ' push "' + tempFile + '" "' + targetPath + '"'
+            : 'adb -s ' + deviceId + ' push "' + tempFile + '" "' + targetPath + '"';
+
+        execSync(pushCmd, { encoding: 'utf8', timeout: 30000, shell: true });
+
+        // Trigger refresh on device
+        const refreshCmd = process.platform === 'win32'
+            ? 'set MSYS_NO_PATHCONV=1 && adb -s ' + deviceId + ' shell am broadcast -a ru.execbit.aiolauncher.COMMAND --es cmd refresh'
+            : 'adb -s ' + deviceId + ' shell am broadcast -a ru.execbit.aiolauncher.COMMAND --es cmd refresh';
+
+        try {
+            execSync(refreshCmd, { encoding: 'utf8', timeout: 10000, shell: true });
+        } catch (refreshErr) {
+            console.warn('Refresh command failed:', refreshErr.message);
+        }
+
+        // Clean up temp file
+        try {
+            unlinkSync(tempFile);
+        } catch (e) { }
+
+        res.json({
+            success: true,
+            message: 'Deployed ' + safeName + ' to device',
+            deviceId: deviceId,
+            widgetName: safeName
+        });
+
+    } catch (error) {
+        console.error('Deploy error:', error.message);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Refresh AIO Launcher on device
+app.post('/api/refresh-device', (req, res) => {
+    try {
+        const { deviceId } = req.body;
+
+        if (!deviceId) {
+            return res.status(400).json({ success: false, error: 'Missing deviceId' });
+        }
+
+        const refreshCmd = process.platform === 'win32'
+            ? 'set MSYS_NO_PATHCONV=1 && adb -s ' + deviceId + ' shell am broadcast -a ru.execbit.aiolauncher.COMMAND --es cmd refresh'
+            : 'adb -s ' + deviceId + ' shell am broadcast -a ru.execbit.aiolauncher.COMMAND --es cmd refresh';
+
+        execSync(refreshCmd, { encoding: 'utf8', timeout: 10000, shell: true });
+
+        res.json({ success: true, message: 'Launcher refreshed' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================================================
+// Start Server
+// ============================================================================
+
 app.listen(PORT, () => {
     console.log(`🚀 Visual Emulator running at http://localhost:${PORT}`);
     console.log(`📱 Open your browser and navigate to the URL above`);
 });
-

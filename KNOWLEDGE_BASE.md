@@ -797,3 +797,130 @@ end
 
 *Last updated: December 2024*
 *Repository: https://github.com/Danz17/AIO-Launcher-Widget*
+
+---
+
+## Tasker & ADB Integration
+
+AIO Launcher supports remote control via broadcasts and scripted commands.
+
+### Broadcast Commands
+
+```bash
+# Refresh all widgets
+adb shell am broadcast -a ru.execbit.aiolauncher.COMMAND --es cmd "refresh"
+
+# Add a widget
+adb shell am broadcast -a ru.execbit.aiolauncher.COMMAND --es cmd "add_widget:my_widget.lua"
+
+# Execute script command
+adb shell am broadcast -a ru.execbit.aiolauncher.COMMAND --es cmd "script:widget_name:custom_cmd"
+```
+
+### Lua Tasker API
+
+```lua
+-- List available Tasker tasks
+local tasks = tasker:tasks()
+
+-- Run a Tasker task
+tasker:run_task("Task Name")
+
+-- Get a Tasker variable
+local value = tasker:get("%Variable")
+```
+
+See [docs/TASKER_COMMANDS.md](docs/TASKER_COMMANDS.md) for complete reference.
+
+---
+
+## Plugin APIs
+
+AIO Launcher supports optional plugins that extend functionality.
+
+### Phone Plugin (`ru.execbit.aiosmscallslog`)
+
+```lua
+-- Get contacts
+local contacts = phone:get_contacts()
+
+-- Make a call
+phone:make_call("123456789")
+
+-- Send SMS
+phone:send_sms("123456789", "Hello!")
+
+-- Get call log
+local calls = phone:get_calls()
+```
+
+### Health Plugin (`ru.execbit.aiohealth`)
+
+```lua
+-- Get step count
+local steps = health:get_steps()
+
+-- Get heart rate
+local hr = health:get_heart_rate()
+```
+
+### SSH Plugin (`ru.execbit.aiosshbuttons`)
+
+```lua
+-- Execute SSH command
+ssh:exec("hostname", callback)
+```
+
+See [docs/PLUGINS.md](docs/PLUGINS.md) for complete plugin documentation.
+
+---
+
+## Emulator Features
+
+The local emulator (`aio-lua-emulator/`) provides:
+
+### Features
+- **Monaco Editor** - Full syntax highlighting
+- **Live Preview** - Real-time widget rendering
+- **Mock HTTP** - Simulate API responses
+- **Device Deployment** - Push widgets to connected Android devices
+- **AI Generator** - Create widgets from descriptions
+
+### Device Deployment
+
+The emulator can detect connected ADB devices and deploy widgets directly:
+
+1. Connect device via ADB (`adb connect IP:PORT`)
+2. Select device from dropdown in emulator
+3. Click "Deploy" to push current widget
+
+### Running the Emulator
+
+```bash
+cd aio-lua-emulator
+npm install
+node server.js
+# Open http://localhost:3000
+```
+
+---
+
+## Default Scripts Repository
+
+The `Widgets/default/` folder contains 280+ official scripts for reference:
+
+| Folder | Count | Description |
+|--------|-------|-------------|
+| `main/` | 13 | Production widgets |
+| `samples/` | 150+ | Code examples & demos |
+| `lib/` | 10+ | Reusable libraries |
+| `community/` | 20+ | User contributions |
+| `store/` | 100+ | Script store content |
+
+### Key Reference Scripts
+
+- `samples/chart-sample.lua` - Chart API examples
+- `samples/rich-gui-sample.lua` - Rich UI patterns
+- `samples/meta-widget.lua` - Dynamic ui:build
+- `samples/http-sample.lua` - HTTP requests
+- `samples/tasker-*.lua` - Tasker integration

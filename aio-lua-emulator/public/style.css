@@ -2239,3 +2239,49 @@ body {
     transform: translateX(-50%) translateY(0);
   }
 }
+
+/* ============================================================================
+   Device Deployment
+   ============================================================================ */
+
+.deploy-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding-left: 8px;
+  border-left: 1px solid var(--border-color, #333);
+}
+
+.deploy-group .select-control {
+  min-width: 150px;
+  max-width: 200px;
+}
+
+.btn-success {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+}
+
+.btn-success:hover {
+  background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
+}
+
+.btn-success:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#refreshDevicesBtn {
+  padding: 6px;
+}
+
+#refreshDevicesBtn:hover svg {
+  animation: spin 0.5s ease;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

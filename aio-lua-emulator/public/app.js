@@ -2845,3 +2845,175 @@ document.addEventListener('DOMContentLoaded', function() {
 
 console.log('AIO Widget Emulator initialized');
 console.log('Shortcuts: Ctrl+Enter = Run, Ctrl+S = Save');
+
+// ============================================================================
+// Device Deployment
+// ============================================================================
+
+// State for device management
+let connectedDevices = [];
+let selectedDeviceId = null;
+
+// Fetch connected devices from server
+async function fetchDevices() {
+  try {
+    const response = await fetch('/api/devices');
+    const data = await response.json();
+    
+    if (data.success) {
+      connectedDevices = data.devices || [];
+      updateDeviceSelect();
+    } else {
+      console.warn('Failed to fetch devices:', data.error);
+      connectedDevices = [];
+      updateDeviceSelect();
+    }
+  } catch (error) {
+    console.error('Error fetching devices:', error);
+    connectedDevices = [];
+    updateDeviceSelect();
+  }
+}
+
+// Update device dropdown
+function updateDeviceSelect() {
+  const select = document.getElementById('deviceSelect');
+  if (!select) return;
+  
+  select.innerHTML = connectedDevices.length === 0
+    ? '<option value="">No Devices</option>'
+    : '<option value="">Select Device...</option>';
+  
+  for (const device of connectedDevices) {
+    const option = document.createElement('option');
+    option.value = device.id;
+    option.textContent = device.label;
+    select.appendChild(option);
+  }
+  
+  // Restore previous selection if still available
+  if (selectedDeviceId) {
+    const exists = connectedDevices.some(d => d.id === selectedDeviceId);
+    if (exists) {
+      select.value = selectedDeviceId;
+    } else {
+      selectedDeviceId = null;
+    }
+  }
+}
+
+// Deploy widget to selected device
+async function deployToDevice() {
+  const deviceSelect = document.getElementById('deviceSelect');
+  const deployBtn = document.getElementById('deployBtn');
+  
+  selectedDeviceId = deviceSelect?.value;
+  
+  if (!selectedDeviceId) {
+    showToast('Please select a device first', 'warning');
+    return;
+  }
+  
+  if (!window.editor) {
+    showToast('No editor available', 'error');
+    return;
+  }
+  
+  const widgetCode = window.editor.getValue();
+  if (!widgetCode.trim()) {
+    showToast('No widget code to deploy', 'warning');
+    return;
+  }
+  
+  // Get widget name from metadata or use default
+  const nameMatch = widgetCode.match(/--\s*name\s*=\s*["']([^"']+)["']/);
+  const widgetName = nameMatch ? nameMatch[1].replace(/\s+/g, '_').toLowerCase() : 'widget';
+  
+  // Disable button during deploy
+  if (deployBtn) {
+    deployBtn.disabled = true;
+    deployBtn.innerHTML = '<span>Deploying...</span>';
+  }
+  
+  try {
+    const response = await fetch('/api/deploy-widget', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        widgetCode,
+        widgetName,
+        deviceId: selectedDeviceId
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      showToast(`Deployed ${data.widgetName} to device`, 'success');
+    } else {
+      showToast(`Deploy failed: ${data.error}`, 'error');
+    }
+  } catch (error) {
+    showToast(`Deploy error: ${error.message}`, 'error');
+  } finally {
+    if (deployBtn) {
+      deployBtn.disabled = false;
+      deployBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg><span>Deploy</span>';
+    }
+  }
+}
+
+// Simple toast notification (uses existing or creates new)
+function showToast(message, type = 'info') {
+  // Check if there's an existing toast function or element
+  let toast = document.getElementById('toast');
+  
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:8px;color:white;font-size:14px;z-index:9999;opacity:0;transition:opacity 0.3s';
+    document.body.appendChild(toast);
+  }
+  
+  const colors = {
+    success: '#10b981',
+    error: '#ef4444',
+    warning: '#f59e0b',
+    info: '#3b82f6'
+  };
+  
+  toast.style.backgroundColor = colors[type] || colors.info;
+  toast.textContent = message;
+  toast.style.opacity = '1';
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+  }, 3000);
+}
+
+// Initialize device deployment on page load
+document.addEventListener('DOMContentLoaded', () => {
+  const deployBtn = document.getElementById('deployBtn');
+  const refreshDevicesBtn = document.getElementById('refreshDevicesBtn');
+  const deviceSelect = document.getElementById('deviceSelect');
+  
+  if (deployBtn) {
+    deployBtn.addEventListener('click', deployToDevice);
+  }
+  
+  if (refreshDevicesBtn) {
+    refreshDevicesBtn.addEventListener('click', () => {
+      showToast('Scanning for devices...', 'info');
+      fetchDevices();
+    });
+  }
+  
+  if (deviceSelect) {
+    deviceSelect.addEventListener('change', (e) => {
+      selectedDeviceId = e.target.value;
+    });
+  }
+  
+  // Auto-fetch devices on load
+  setTimeout(fetchDevices, 1000);
+});

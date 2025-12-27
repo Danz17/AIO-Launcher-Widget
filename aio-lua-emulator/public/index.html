@@ -52,6 +52,24 @@
           </svg>
           <span>Upload</span>
         </button>
+        <div class="deploy-group">
+          <select id="deviceSelect" class="select-control" title="Select device">
+            <option value="">No Device</option>
+          </select>
+          <button class="btn btn-success" id="deployBtn" title="Deploy to device">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+              <line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+            <span>Deploy</span>
+          </button>
+          <button class="btn btn-icon" id="refreshDevicesBtn" title="Refresh device list">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+          </button>
+        </div>
         <button class="btn btn-icon" id="themeToggleBtn" title="Toggle theme">
           <svg class="theme-icon-dark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="5"/>

@@ -1,0 +1,547 @@
+[
+{
+ "file": "actions-menu.lua",
+ "name": "Actions menu",
+ "description": "Shows aio launcher actions",
+ "type": "drawer",
+ "author": "Evgeny Zobnin",
+ "version": "1.0",
+ "md5sum": "227f7fef5806e4eadceca7ef3a0dd7b6"
+},
+{
+ "file": "alquran-widget.lua",
+ "name": "AlQuran",
+ "description": "AlQuran",
+ "type": "widget",
+ "author": "Nuhu Sule (ncalyx@gmail.com)",
+ "version": "2.3",
+ "foldable": "false",
+ "md5sum": "0f4897a4c4e2c26c7a8d572054fbbfdc"
+},
+{
+ "file": "amdroid-buttons-app-widget.lua",
+ "name": "Amdroid Buttons",
+ "description": "Foldable AIO wrapper for the Amdroid Buttons app widget",
+ "type": "widget",
+ "author": "Theodor Galanis (t.me/TheodorGalanis)",
+ "version": "1.10",
+ "foldable": "true",
+ "md5sum": "3042078cb61bbc479e53eb8c8b781593"
+},
+{
+ "file": "amdroid-nextalarm-app-widget.lua",
+ "name": "Amdroid Next Alarm",
+ "description": "AIO wrapper for the Amdroid Next alarm app widget",
+ "type": "widget",
+ "author": "Theodor Galanis (t.me/TheodorGalanis)",
+ "version": "1.11",
+ "foldable": "false",
+ "md5sum": "fc6928b51ce19573396e4bdc3e90aea0"
+},
+{
+ "file": "arm-ru-abc-widget.lua",
+ "name": "Армянский алфавит",
+ "description": "Армянский алфавит с транскрипцией",
+ "type": "widget",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "lang": "ru",
+ "md5sum": "221f1ef303b0268dadac817325561d2c"
+},
+{
+ "file": "bdpn-search.lua",
+ "name": "Мобильный оператор",
+ "description": "Cкрипт отображает мобильного оператора по номеру телефона",
+ "type": "search",
+ "lang": "ru",
+ "author": "Andrey Gavrilov",
+ "version": "1.1",
+ "md5sum": "d3ef2d64675628c547f75c4971ebd409"
+},
+{
+ "file": "bible-search.lua",
+ "name": "Bible Search",
+ "type": "search",
+ "author": "Evon Smith",
+ "description": "Type in Bible book and chapter to open the YouVersion Bible App to that location right from the search window",
+ "version": "2.0",
+ "md5sum": "9d4b2c05593d25c9079a6c658de4c2b5"
+},
+{
+ "file": "birthdays-widget.lua",
+ "name": "Birthdays",
+ "description": "Shows upcoming birthdays from the contacts",
+ "type": "widget",
+ "author": "Andrey Gavrilov",
+ "version": "1.3",
+ "md5sum": "ee56c843b1fe850b7259630a674a4fd7"
+},
+{
+ "file": "calendar-progress-widget.lua",
+ "name": "Calendar Progress",
+ "description": "Shows day, week, month, and year progress bars",
+ "type": "widget",
+ "author": "meluskyc",
+ "version": "1.0",
+ "foldable": "false",
+ "md5sum": "683af22a6c293b8f12ce036fbfd24ec0"
+},
+{
+ "file": "calllog-ru-root-widget.lua",
+ "name": "История вызовов",
+ "description": "Скрипт показывает историю вызов через прямое чтение базы звонков",
+ "type": "widget",
+ "author": "Andrey Gavrilov",
+ "version": "1.1",
+ "lang": "ru",
+ "root": "true",
+ "md5sum": "68e71e63393b283b95260b09b337522f"
+},
+{
+ "file": "chrome-shortctus-app-widget.lua",
+ "name": "Chrome shortcuts",
+ "description": "AIO wrapper for the Chrome shortcuts app widget",
+ "type": "widget",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "foldable": "false",
+ "md5sum": "1fb17e1c236451d52a9d31b2f8d9336c"
+},
+{
+ "file": "counter-widget.lua",
+ "name": "Counter",
+ "description": "Time counting widget to fight bad habits",
+ "type": "widget",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "2.0",
+ "md5sum": "48c078deaa03f998b4562cb4b2e6006f"
+},
+{
+ "file": "country-search.lua",
+ "name": "Country",
+ "description": "Search country by code or name",
+ "type": "search",
+ "version": "1.0",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "md5sum": "61f96d52ecd9418812a45c6d5e86572a"
+},
+{
+ "file": "currency-cbr-search.lua",
+ "name": "Курс валют ЦБ",
+ "description": "Cкрипт отображает курс валюты ЦБ России на заданную дату (usd 30 3 22)",
+ "type": "search",
+ "lang": "ru",
+ "author": "Andrey Gavrilov",
+ "version": "1.0",
+ "md5sum": "a9b15b9a74901b412296c9139e3fcbf7"
+},
+{
+ "file": "dad-jokes-widget.lua",
+ "name": "Dad jokes",
+ "description": "icanhazdadjoke.com",
+ "type": "widget",
+ "author": "me",
+ "version": "1.0",
+ "md5sum": "36182bcb3ceb458978ca645ec74ecbe9"
+},
+{
+ "file": "electricity-price-widget.lua",
+ "name": "Electricity spot price",
+ "description": "Day-ahead spot price of electricity",
+ "type": "widget",
+ "foldable": "true",
+ "author": "Hannu Hartikainen <hannu.hartikainen@gmail.com>",
+ "version": "1.1",
+ "md5sum": "7a74861fed70a387046d9d0fe27f2931"
+},
+{
+ "file": "enhanced-calendar-widget.lua",
+ "name": "Enhanced Calendar",
+ "description": "Monthly calendar with system calendar events",
+ "type": "widget",
+ "author": "Evon Smith with code from Andrey Gavrilov's Calendar widget",
+ "version": "1.4",
+ "md5sum": "108d2459611dfdb9d9961f72e9eb7f4d"
+},
+{
+ "file": "facts-widget.lua",
+ "name": "Random facts",
+ "description": "Random useless facts",
+ "type": "widget",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "foldable": "false",
+ "md5sum": "2d87cb119bb5c1ab8a93baf03367a916"
+},
+{
+ "file": "fennel-search.lua",
+ "name": "Fennel interpreter",
+ "type": "search",
+ "description": "Interpreter for the Fennel language (a Lisp dialect) right in the search box!",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "md5sum": "f201b3bfa808d3e6f002087d1b56972b"
+},
+{
+ "file": "fifteen-widget.lua",
+ "name": "15 Puzzle",
+ "description": "Game",
+ "type": "widget",
+ "author": "Andrey Gavrilov",
+ "version": "1.1",
+ "md5sum": "61b3743ed6088233dc0a3db002e6beee"
+},
+{
+ "file": "google-tasks-app-widget.lua",
+ "name": "Google Tasks",
+ "description": "AIO wrapper for the official Google Tasks app widget",
+ "type": "widget",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "md5sum": "5cac401102ad43ee604828c3ab3340f2"
+},
+{
+ "file": "google-translate-search.lua",
+ "name": "Google Translate",
+ "description": "A search script that shows the translation of what you type in the search window",
+ "type": "search",
+ "author": "Evgeny Zobnin",
+ "version": "1.0",
+ "md5sum": "a7445f6bacd11cf56950d84ed473e3f1"
+},
+{
+ "file": "google-translate-widget.lua",
+ "name": "Google Translate",
+ "type": "widget",
+ "author": "Andrey Gavrilov",
+ "version": "1.3",
+ "md5sum": "744d91f3a298294db59cada159e18096"
+},
+{
+ "file": "habits-widget.lua",
+ "name": "Habit Tracker",
+ "description": "Daily habit tracker with JSON storage",
+ "type": "widget",
+ "author": "Sergey Mironov",
+ "version": "1.1",
+ "md5sum": "df00fd91ddb22d8af392dcdaaf8f14d7"
+},
+{
+ "file": "isdayoff-ru-widget.lua",
+ "name": "Сегодня выходной?",
+ "description": "Показывает, выходной ли сегодня день.",
+ "type": "widget",
+ "lang": "ru",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "md5sum": "c31f11327bae33e2e332bfe8c0df1e74"
+},
+{
+ "file": "kodi-remote-widget.lua",
+ "name": "Kodi Remote",
+ "description": "Kodi multimedia center remote control widget",
+ "type": "widget",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.1",
+ "md5sum": "4d2ce3870ff7bf79f4f8d2981879d00a"
+},
+{
+ "file": "monitor-lite-widget.lua",
+ "name": "Monitor",
+ "description": "One line monitor widget",
+ "type": "widget",
+ "foldable": "false",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "md5sum": "e17fa9f7bf1ff199ad9bb89787122e9b"
+},
+{
+ "file": "navigate-search.lua",
+ "name": "Navigate",
+ "description": "Navigate to address",
+ "type": "search",
+ "author": "Sriram SV",
+ "version": "1.0",
+ "prefix": "navigate|nav",
+ "md5sum": "50a899712b8fac71a4e179c51c8f13f8"
+},
+{
+ "file": "net-file-widget.lua",
+ "name": "Network file",
+ "description": "Shows the contents of any file on the Internet",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "md5sum": "b311e3cb0f5d403ccc3d8d7844263fc2"
+},
+{
+ "file": "password-gen-search.lua",
+ "name": "Password generator",
+ "description": "30-character password generator",
+ "type": "search",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "md5sum": "18a8e150ca960d6de4612ca195837d10"
+},
+{
+ "file": "period-progress-widget.lua",
+ "name": "Period progress",
+ "description": "Shows period progress",
+ "type": "widget",
+ "author": "Nikolai Galashev",
+ "version": "1.0",
+ "md5sum": "3d85a6978be83deb3499cc2b36f82254"
+},
+{
+ "file": "play-store-search.lua",
+ "name": "Play Store",
+ "description": "Search anything in Play Store app",
+ "type": "search",
+ "author": "Sriram SV",
+ "version": "1.0",
+ "prefix": "store|ps",
+ "md5sum": "4769ad11b2346681922e802cdadaee5e"
+},
+{
+ "file": "profiles-dumper-widget.lua",
+ "name": "Profiles auto dumper",
+ "description": "Hidden widget that auto dump profile on every return to the home screen",
+ "type": "widget",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "foldable": "false",
+ "md5sum": "06fac45eeeac7639e5f15c40ba7b2380"
+},
+{
+ "file": "profiles-restore-save-widget.lua",
+ "name": "Profile Switcher",
+ "version": "1.1",
+ "description": "Tap: restore profile / Long-press: save to profile",
+ "type": "widget",
+ "author": "Marcus Johansson",
+ "md5sum": "1af2877869064c61704314e5e5435ba4"
+},
+{
+ "file": "public-ip-search.lua",
+ "name": "Public IP",
+ "description": "Shows your public IP in the search bar",
+ "type": "search",
+ "author": "Sriram SV",
+ "version": "1.0",
+ "md5sum": "9850d0a89a100b4a66e00ef1d55b64d9"
+},
+{
+ "file": "qr-code-search.lua",
+ "name": "QR Code",
+ "description": "Turn any text or url into QR code",
+ "type": "search",
+ "author": "Sriram SV",
+ "version": "1.0",
+ "prefix": "qr",
+ "md5sum": "21f322216fcc5d23db135a12bdf8be79"
+},
+{
+ "file": "quickactions-widget.lua",
+ "name": "Quick Actions",
+ "type": "widget",
+ "description": "Launcher selected actions widget",
+ "foldable": "true",
+ "author": "Theodor Galanis",
+ "version": "2.6",
+ "md5sum": "6d1271a6a75a685dbac130258836acd9"
+},
+{
+ "file": "random-joke-widget.lua",
+ "name": "Random jokes",
+ "description": "official-joke-api.appspot.com",
+ "type": "widget",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "md5sum": "2e0d0cf32c08227edea6a75bfa6421f2"
+},
+{
+ "file": "recent-apps-widget.lua",
+ "name": "Recent Apps",
+ "description": "Gets the apps in the recent apps (app overview) screen. Tap to open the app or long press to remove it.\nREQUIRES ROOT and Android 11 or higher.",
+ "type": "widget",
+ "author": "Abi",
+ "version": "3.3",
+ "foldable": "false",
+ "md5sum": "1e5c1e9300fed66f8e3a229e80b75ad0"
+},
+{
+ "file": "region-ru-search.lua",
+ "name": "Автомобильные коды",
+ "description": "Поиск по кодам автомобильных номеров России",
+ "lang": "ru",
+ "type": "search",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "md5sum": "8de59988c9c4e85378018ebd1145e200"
+},
+{
+ "file": "settings-menu.lua",
+ "name": "Settings menu",
+ "description": "Side menu with AIO settings",
+ "type": "drawer",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "md5sum": "e4128a71b1b2577263cd2d4b96d79cc3"
+},
+{
+ "file": "share-menu-search.lua",
+ "name": "Share Text",
+ "description": "Share text with other apps",
+ "type": "search",
+ "author": "Sriram SV",
+ "version": "1.0",
+ "prefix": "share",
+ "md5sum": "c0f1bccae20dc71b088efe9129500888"
+},
+{
+ "file": "shell-widget.lua",
+ "name": "Shell widget",
+ "description": "Shows the result of executing console commands",
+ "type": "widget",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "foldable": "false",
+ "md5sum": "41f9d75633d0139a899ec538f3ca9716"
+},
+{
+ "file": "solar-cycle-widget.lua",
+ "name": "Solar Cycle",
+ "description": "Shows Sunrise Sunset at your location",
+ "type": "widget",
+ "author": "Sriram S V, Will Hall",
+ "version": "1.0",
+ "foldable": "false",
+ "md5sum": "cb5c2fc28079c51d781843481af09c71"
+},
+{
+ "file": "sudoku-widget.lua",
+ "name": "Sudoku",
+ "description": "Sudoku games",
+ "type": "widget",
+ "author": "Andrey Gavrilov",
+ "version": "1.0",
+ "md5sum": "fc951197bc01edc9f46ee9472d0085f0"
+},
+{
+ "file": "tasker-command-search.lua",
+ "name": "Tasker Command Search",
+ "description": "Sends tasker command from search bar",
+ "type": "search",
+ "author": "Sriram SV",
+ "version": "1.0",
+ "prefix": "tasker | Tasker | command",
+ "md5sum": "5d1657f74f6b2c15d70db321b3e35ed9"
+},
+{
+ "file": "thirukkural-widget.lua",
+ "name": "Thirukkural",
+ "description": "Thirukkural Widget that refreshes  a verse form the Tamil Book Thirukkural. Single click will open the diaglog with multiple translations in English and Tamili. Long press will retrive a new verse. This uses the API from getthirukural",
+ "type": "widget",
+ "author": "Abdul MJ (mjabdulm@gmail.com)",
+ "version": "1.0",
+ "foldable": "false",
+ "md5sum": "1a623c6f965ff9ba2c9b0fe577676cb1"
+},
+{
+ "file": "ticktick-app-widget.lua",
+ "name": "TickTick",
+ "description": "AIO Launhcer wrapper for official TickTick app widget",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "md5sum": "ca3207ba144c97b5193e53f04ffd764e"
+},
+{
+ "file": "tide-widget.lua",
+ "name": "Tide Time",
+ "description": "Widget shows high and low tide times for today.",
+ "type": "widget",
+ "author": "AI Assistant",
+ "version": "1.0",
+ "md5sum": "ab0c929e595d23ad644ed0f3ab4c558c"
+},
+{
+ "file": "time-date-widget.lua",
+ "name": "Time & Date",
+ "description": "Simple widget showing current time and date",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "type": "widget",
+ "md5sum": "4423f523798cf0d6fe9a0cd6d54c5449"
+},
+{
+ "file": "timed-message-widget.lua",
+ "name": "Timed message",
+ "description": "A message that is displayed at a specific time",
+ "type": "widget",
+ "foldable": "false",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "md5sum": "a5eae1efb711dc2bbc9f77ce90e5930c"
+},
+{
+ "file": "todoist-app-widget.lua",
+ "name": "Todoist",
+ "description": "AIO wrapper for the official Todoist app widget",
+ "type": "widget",
+ "author": "Andey Gavrilov",
+ "md5sum": "b01062fb14a4bff7cb492bd06b3cc2a1"
+},
+{
+ "file": "tvguide-ru-widget.lua",
+ "name": "ТВ-Программа",
+ "description": "Программа передач россиийского ТВ",
+ "type": "widget",
+ "version": "1.1",
+ "lang": "ru",
+ "author": "Andrey Gavrilov",
+ "md5sum": "4f56db7826d4f52c6a4a5b5d6eeba2df"
+},
+{
+ "file": "uptimerobot-2-widget.lua",
+ "name": "Uptimerobot V2",
+ "description": "Shows uptime information from uptimerobot.com. Needs API key. Button-based Version.",
+ "type": "widget",
+ "author": "Evgeny Zobnin (zobnin@gmail.com), Will Hall (hello@willhall.uk)",
+ "version": "1.0",
+ "md5sum": "810eba7444f0277bc9c370e8b46ae8ef"
+},
+{
+ "file": "uptimerobot-widget.lua",
+ "name": "Uptimerobot",
+ "description": "Shows uptime information from uptimerobot.com. Needs API key.",
+ "type": "widget",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.1",
+ "md5sum": "264844f4436077dff499e6bdacebc652"
+},
+{
+ "file": "what-to-do-widget.lua",
+ "name": "What to do?",
+ "description": "Let's find you something to do",
+ "type": "widget",
+ "author": "Evgeny Zobnin (zobnin@gmail.com)",
+ "version": "1.0",
+ "foldable": "false",
+ "md5sum": "80204db3110f528d2754e2ab3d59040d"
+},
+{
+ "file": "widgets-on-off.lua",
+ "name": "Widgets switcher",
+ "description": "Turns screen widgets on and off when buttons are pressed",
+ "type": "widget",
+ "author": "Andrey Gavrilov",
+ "version": "3.1",
+ "md5sum": "9a96ac65a7287e8d1dfe2765eb34837f"
+},
+{
+ "file": "youtube-search.lua",
+ "name": "Youtube",
+ "description": "Search anything in youtube app",
+ "type": "search",
+ "author": "Sriram SV",
+ "version": "1.0",
+ "prefix": "youtube|yt",
+ "md5sum": "4ae3a1a8cd65eb80dc56a3d348636b4a"
+}
+]
